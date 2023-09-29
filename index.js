@@ -357,7 +357,7 @@ app.get('/visitor-left/:visitorID', async (req, res) => {
     }
 
     // Get the current date and time for the visitor leaving in the desired time zone
-    const tz = 'YourTimeZone'; // Replace 'YourTimeZone' with the desired time zone, e.g., 'Asia/Kolkata'
+    const tz = 'Asia/Kolkata'; // Replace 'YourTimeZone' with the desired time zone, e.g., 'Asia/Kolkata'
     const currentDate = moment.tz(tz);
     const leaveTime = currentDate.format('hh:mm A');
 
