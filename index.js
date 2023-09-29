@@ -228,6 +228,7 @@ app.post("/visitors", async (req, res) => {
     res.status(200).json({ result: "Entry Sucessful" });
   } catch (error) {
     res.status(500).json({ error: "Could not save visitor" });
+    console.log(error)
   }
 });
 
