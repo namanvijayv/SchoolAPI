@@ -180,7 +180,7 @@ app.post("/login", async (req, res) => {
     }
 
     // Authentication successful
-    res.status(200).json({ message: "Login successful" });
+    res.status(200).json({ message: "Login successful", loginID: student.loginID });
   } catch (error) {
     res.status(500).json({ error: "Login failed. Internal server error." });
   }
