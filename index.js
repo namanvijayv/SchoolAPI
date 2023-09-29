@@ -108,6 +108,25 @@ app.get("/get-students", async (req, res) => {
   }
 });
 
+// Define a route to get a student by loginID
+app.get('/get-student/loginID/:loginID', async (req, res) => {
+  try {
+    const loginID = req.params.loginID;
+
+    // Find the student by loginID
+    const student = await Student.findOne({ loginID: loginID });
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    res.status(200).json(student);
+  } catch (error) {
+    res.status(500).json({ error: 'Could not fetch student' });
+  }
+});
+
+
 app.get("/get-classes", async (req, res) => {
   try {
     const classes = await Student.distinct("class");
