@@ -356,12 +356,10 @@ app.get('/visitor-left/:visitorID', async (req, res) => {
       return res.status(404).json({ error: 'Visitor not found' });
     }
 
-    // Get the current date and time for the visitor leaving
-    const currentDate = new Date();
-    const leaveTime = currentDate.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    // Get the current date and time for the visitor leaving in the desired time zone
+    const tz = 'YourTimeZone'; // Replace 'YourTimeZone' with the desired time zone, e.g., 'Asia/Kolkata'
+    const currentDate = moment.tz(tz);
+    const leaveTime = currentDate.format('hh:mm A');
 
     // Update the visitor's leave time in the visitor document
     visitor.leaveTime = leaveTime;
