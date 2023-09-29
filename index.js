@@ -377,7 +377,7 @@ app.get('/visitor-left/:visitorID', async (req, res) => {
 app.get('/total-visitors-today', async (req, res) => {
   try {
     // Get the current date in the desired time zone
-    const tz = 'YourTimeZone'; // Replace 'YourTimeZone' with the desired time zone, e.g., 'Asia/Kolkata'
+    const tz = 'Asia/Kolkata'; // Replace 'YourTimeZone' with the desired time zone, e.g., 'Asia/Kolkata'
     const currentDate = moment.tz(tz);
 
     // Get the start and end of the day for the current date
