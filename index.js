@@ -1,7 +1,12 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const bodyParser = require("body-parser");
 const cors = require("cors");
+const fs = require('fs');
+const express = require('express');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const path = require('path'); // Import the 'path' module
+const { Chart } = require('chart.js');
+
+
 // Create an Express application
 const app = express();
 app.use(cors());
@@ -236,21 +241,72 @@ app.get("/get-visitors", async (req, res) => {
   }
 });
 
-// Define a route to get a student by loginID
-app.get('/get-student/loginID/:loginID', async (req, res) => {
+
+//GRAPH
+
+// Define a route to plot a bar graph of total visitors per day
+app.get('/total-visitors-per-day', async (req, res) => {
   try {
-    const loginID = req.params.loginID;
+    // Retrieve all visitor records
+    const visitors = await Visitor.find();
 
-    // Find the student by loginID
-    const student = await Student.findOne({ loginID: loginID });
+    // Create an object to store the total visitors per day
+    const visitorsPerDay = {};
 
-    if (!student) {
-      return res.status(404).json({ error: 'Student not found' });
-    }
+    // Calculate the total visitors for each day
+    visitors.forEach((visitor) => {
+      const { visitDate } = visitor;
+      if (visitorsPerDay[visitDate]) {
+        visitorsPerDay[visitDate]++;
+      } else {
+        visitorsPerDay[visitDate] = 1;
+      }
+    });
 
-    res.status(200).json(student);
+    // Extract the dates and visitor counts for chart data
+    const dates = Object.keys(visitorsPerDay);
+    const visitorCounts = Object.values(visitorsPerDay);
+
+    // Generate a simple HTML page with the chart
+    const chartHtml = `
+      <html>
+        <head>
+          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        </head>
+        <body>
+          <canvas id="visitorChart" width="400" height="200"></canvas>
+          <script>
+            const ctx = document.getElementById('visitorChart').getContext('2d');
+            new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels: ${JSON.stringify(dates)},
+                datasets: [{
+                  label: 'Total Visitors',
+                  data: ${JSON.stringify(visitorCounts)},
+                  backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                  borderColor: 'rgba(75, 192, 192, 1)',
+                  borderWidth: 1,
+                }],
+              },
+              options: {
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                  },
+                },
+              },
+            });
+          </script>
+        </body>
+      </html>
+    `;
+
+    // Send the HTML page as a response
+    res.send(chartHtml);
   } catch (error) {
-    res.status(500).json({ error: 'Could not fetch student' });
+    console.error(error);
+    res.status(500).json({ error: 'Could not generate chart' });
   }
 });
 
