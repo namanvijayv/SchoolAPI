@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const path = require('path'); // Import the 'path' module
 const { Chart } = require('chart.js');
+const moment = require('moment-timezone');
 
 
 // Create an Express application
@@ -198,21 +199,18 @@ const visitorSchema = new mongoose.Schema({
 
 const Visitor = mongoose.model("Visitor", visitorSchema);
 
-// Define a route to save visitor data with separate date and time
-app.post("/visitors", async (req, res) => {
+// Create a new visitor entry
+app.post('/visitors', async (req, res) => {
   try {
     const { name, purpose, toWho, mobile } = req.body;
 
     // Generate a random 6-digit numeric ID for the visitor
     const visitorID = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Get the current date and time
-    const currentDate = new Date();
-    const visitDate = currentDate.toISOString().split("T")[0]; // Get date in "YYYY-MM-DD" format
-    const visitTime = currentDate.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-    }); // Get time in "hh:mm AM/PM" format
+    // Get the current date and time in your desired time zone
+    const currentDate = moment.tz('Asia/Kolkata'); // Replace 'YourTimeZone' with the desired time zone, e.g., 'Asia/Kolkata'
+    const visitDate = currentDate.format('YYYY-MM-DD'); // Get date in "YYYY-MM-DD" format
+    const visitTime = currentDate.format('hh:mm A'); // Get time in "hh:mm AM/PM" format
 
     const visitor = new Visitor({
       name,
@@ -225,9 +223,9 @@ app.post("/visitors", async (req, res) => {
     });
 
     await visitor.save();
-    res.status(200).json({ result: "Entry Sucessful" });
+    res.status(200).json({ result: 'Entry Successful' });
   } catch (error) {
-    res.status(500).json({ error: "Could not save visitor" });
+    res.status(500).json({ error: 'Could not save visitor' });
     console.log(error)
   }
 });
