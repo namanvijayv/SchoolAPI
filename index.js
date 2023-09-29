@@ -382,7 +382,9 @@ app.get('/total-visitors-today', async (req, res) => {
 
     // Specify the date range for the current day
     const startOfDay = moment.tz(currentDate, tz).startOf('day').format('YYYY-MM-DDTHH:mm:ss.SSSZ');
+    console.log("Start Date -------- "+startOfDay) ;
     const endOfDay = moment.tz(currentDate, tz).endOf('day').format('YYYY-MM-DDTHH:mm:ss.SSSZ');
+    console.log("Start Date -------- "+endOfDay) ;
 
     // Count the visitors for the current date
     const totalVisitors = await Visitor.countDocuments({
