@@ -214,6 +214,7 @@ const visitorSchema = new mongoose.Schema({
   visitorID: String,
   visitDate: String,
   visitTime: String,
+  leaveTime: String,
 });
 
 const Visitor = mongoose.model("Visitor", visitorSchema);
@@ -341,6 +342,36 @@ res.send(chartHtml);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Could not generate chart' });
+  }
+});
+
+app.get('/visitor-left/:visitorID', async (req, res) => {
+  try {
+    const { visitorID } = req.params;
+
+    // Find the visitor by visitorID
+    const visitor = await Visitor.findOne({ visitorID });
+
+    if (!visitor) {
+      return res.status(404).json({ error: 'Visitor not found' });
+    }
+
+    // Get the current date and time for the visitor leaving
+    const currentDate = new Date();
+    const leaveTime = currentDate.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    // Update the visitor's leave time in the visitor document
+    visitor.leaveTime = leaveTime;
+
+    // Save the updated visitor document in the visitors collection
+    await visitor.save();
+
+    res.status(200).json({ message: 'Visitor left successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to record visitor leave time' });
   }
 });
 
