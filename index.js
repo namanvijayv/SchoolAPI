@@ -377,19 +377,12 @@ app.get('/visitor-left/:visitorID', async (req, res) => {
 app.get('/total-visitors-today', async (req, res) => {
   try {
     // Get the current date in the desired time zone
-    const tz = 'YourTimeZone'; // Replace 'YourTimeZone' with the desired time zone, e.g., 'Asia/Kolkata'
+    const tz = 'YourTimeZone'; // Replace with your desired time zone
     const currentDate = moment.tz(tz);
 
-    // Debugging: Log the current date and time
-    console.log('Current Date:', currentDate.format());
-
-    // Get the start and end of the day for the current date
-    const startOfDay = currentDate.startOf('day').toDate();
-    const endOfDay = currentDate.endOf('day').toDate();
-
-    // Debugging: Log the start and end of the day
-    console.log('Start of Day:', startOfDay);
-    console.log('End of Day:', endOfDay);
+    // Specify the date range for the current day
+    const startOfDay = moment.tz(currentDate, tz).startOf('day').format('YYYY-MM-DDTHH:mm:ss.SSSZ');
+    const endOfDay = moment.tz(currentDate, tz).endOf('day').format('YYYY-MM-DDTHH:mm:ss.SSSZ');
 
     // Count the visitors for the current date
     const totalVisitors = await Visitor.countDocuments({
@@ -401,6 +394,7 @@ app.get('/total-visitors-today', async (req, res) => {
     res.status(500).json({ error: 'Failed to count total visitors for today' });
   }
 });
+
 
 
 // Start the Express server
