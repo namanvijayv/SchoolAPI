@@ -268,42 +268,58 @@ app.get('/total-visitors-per-day', async (req, res) => {
     const visitorCounts = Object.values(visitorsPerDay);
 
     // Generate a simple HTML page with the chart
-    const chartHtml = `
-      <html>
-        <head>
-          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        </head>
-        <body>
-          <canvas id="visitorChart" width="400" height="200"></canvas>
-          <script>
-            const ctx = document.getElementById('visitorChart').getContext('2d');
-            new Chart(ctx, {
-              type: 'bar',
-              data: {
-                labels: ${JSON.stringify(dates)},
-                datasets: [{
-                  label: 'Total Visitors',
-                  data: ${JSON.stringify(visitorCounts)},
-                  backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                  borderColor: 'rgba(75, 192, 192, 1)',
-                  borderWidth: 1,
-                }],
-              },
-              options: {
-                scales: {
-                  y: {
-                    beginAtZero: true,
-                  },
-                },
-              },
-            });
-          </script>
-        </body>
-      </html>
-    `;
+const chartHtml = `
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <canvas id="visitorChart" width="400" height="200"></canvas>
+    <script>
+      const ctx = document.getElementById('visitorChart').getContext('2d');
+      
+      // Function to generate a random RGB color
+      const getRandomColor = () => {
+        const r = Math.floor(Math.random() * 256);
+        const g = Math.floor(Math.random() * 256);
+        const b = Math.floor(Math.random() * 256);
+        return \`rgba(\${r}, \${g}, \${b}, 0.2)\`;
+      };
+      
+      const dates = ${JSON.stringify(dates)};
+      const visitorCounts = ${JSON.stringify(visitorCounts)};
+      
+      // Create an array to store random colors for each bar
+      const backgroundColors = dates.map(() => getRandomColor());
+      
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: dates,
+          datasets: [{
+            label: 'Total Visitors',
+            data: visitorCounts,
+            backgroundColor: backgroundColors, // Assign random colors
+            borderColor: backgroundColors,
+            borderWidth: 2,
+          }],
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
+`;
 
-    // Send the HTML page as a response
-    res.send(chartHtml);
+// Send the HTML page as a response
+res.send(chartHtml);
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Could not generate chart' });
