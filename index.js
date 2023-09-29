@@ -377,7 +377,7 @@ app.get('/visitor-left/:visitorID', async (req, res) => {
 app.get('/total-visitors-today', async (req, res) => {
   try {
     // Get the current date in the desired time zone
-    const tz = 'YourTimeZone'; // Replace with your desired time zone
+    const tz = 'Asia/Kolkata'; // Replace with your desired time zone
     const currentDate = moment.tz(tz);
 
     // Specify the date range for the current day
