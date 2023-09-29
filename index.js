@@ -373,6 +373,27 @@ app.get('/visitor-left/:visitorID', async (req, res) => {
   }
 });
 
+//Total-Visitor-Count of PRESENT DATE
+app.get('/total-visitors-today', async (req, res) => {
+  try {
+    // Get the current date in the desired time zone
+    const tz = 'YourTimeZone'; // Replace 'YourTimeZone' with the desired time zone, e.g., 'Asia/Kolkata'
+    const currentDate = moment.tz(tz);
+
+    // Get the start and end of the day for the current date
+    const startOfDay = currentDate.startOf('day').toDate();
+    const endOfDay = currentDate.endOf('day').toDate();
+
+    // Count the visitors for the current date
+    const totalVisitors = await Visitor.countDocuments({
+      visitDate: { $gte: startOfDay, $lte: endOfDay },
+    });
+
+    res.status(200).json({ totalVisitors });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to count total visitors for today' });
+  }
+});
 
 // Start the Express server
 app.listen(port, () => {
