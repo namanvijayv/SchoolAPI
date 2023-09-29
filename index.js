@@ -104,7 +104,7 @@ app.get("/get-students", async (req, res) => {
     const students = await Student.find(query);
     res.status(200).json(students);
   } catch (error) {
-    res.status(500).json({ error: "Could not fetch students" });
+    res.status(500).send(error);
   }
 });
 
