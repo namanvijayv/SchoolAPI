@@ -374,7 +374,7 @@ app.get('/visitor-left/:visitorID', async (req, res) => {
 });
 
 //Total-Visitor-Count of PRESENT DATE
-app.get('/total-visitors-today', async (req, res) => {
+app.get('/total-visitors-in-today', async (req, res) => {
   try {
     // Get the current date in the desired time zone
     const tz = 'Asia/Kolkata'; // Replace with your desired time zone
@@ -389,6 +389,30 @@ app.get('/total-visitors-today', async (req, res) => {
     res.status(200).json({ totalVisitors });
   } catch (error) {
     res.status(500).json({ error: 'Failed to count total visitors for today' });
+  }
+});
+
+// Total-Visitor-Count OUT on PRESENT DATE
+app.get('/total-visitors-out-today', async (req, res) => {
+  try {
+    // Get the current date in the desired time zone
+    const tz = 'Asia/Kolkata'; // Replace with your desired time zone
+    const currentDate = moment.tz(tz);
+
+    // Format the current date in "YYYY-MM-DD" format
+    const todayDate = currentDate.format('YYYY-MM-DD');
+
+    // Use MongoDB aggregation to count visitors with leaveTime on today's date
+    const totalVisitors = await Visitor.countDocuments({
+      visitDate: todayDate,
+      // Check if leaveTime exists and if it starts with today's date
+      leaveTime: { $exists: true }
+    });
+    console.log(totalVisitors) ;
+
+    res.status(200).json({ totalVisitors });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to count total visitors OUT for today' });
   }
 });
 
