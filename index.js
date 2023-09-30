@@ -417,6 +417,86 @@ app.get('/total-visitors-out-today', async (req, res) => {
 });
 
 
+// Total-Visitor-Count by Purpose for PRESENT DAY
+app.get('/pieVchart', async (req, res) => {
+  try {
+    // Get the current date in the desired time zone
+    const tz = 'Asia/Kolkata'; // Replace with your desired time zone
+    const currentDate = moment.tz(tz);
+
+    // Format the current date in "YYYY-MM-DD" format
+    const todayDate = currentDate.format('YYYY-MM-DD');
+
+    // Use MongoDB aggregation to group visitors by purpose and count them for today
+    const purposeCounts = await Visitor.aggregate([
+      {
+        $match: {
+          visitDate: todayDate,
+        },
+      },
+      {
+        $group: {
+          _id: '$purpose',
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // Extract the purpose labels and counts
+    const purposeLabels = purposeCounts.map((item) => item._id);
+    const purposeData = purposeCounts.map((item) => item.count);
+
+    // Generate a simple HTML page with the pie chart
+    const chartHtml = `
+      <html>
+        <head>
+          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        </head>
+        <body>
+          <canvas id="purposeChart" width="400" height="200"></canvas>
+          <script>
+            const ctx = document.getElementById('purposeChart').getContext('2d');
+
+            // Function to generate a random RGB color
+            const getRandomColor = () => {
+              const r = Math.floor(Math.random() * 256);
+              const g = Math.floor(Math.random() * 256);
+              const b = Math.floor(Math.random() * 256);
+              return \`rgba(\${r}, \${g}, \${b}, 0.5)\`;
+            };
+
+            const purposeLabels = ${JSON.stringify(purposeLabels)};
+            const purposeData = ${JSON.stringify(purposeData)};
+
+            // Create an array to store random colors for each pie slice
+            const backgroundColors = purposeLabels.map(() => getRandomColor());
+
+            new Chart(ctx, {
+              type: 'pie',
+              data: {
+                labels: purposeLabels,
+                datasets: [
+                  {
+                    data: purposeData,
+                    backgroundColor: backgroundColors, // Assign random colors
+                  },
+                ],
+              },
+            });
+          </script>
+        </body>
+      </html>
+    `;
+
+    // Send the HTML page as a response
+    res.send(chartHtml);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Could not generate pie chart' });
+  }
+});
+
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
