@@ -377,42 +377,20 @@ app.get('/visitor-left/:visitorID', async (req, res) => {
 app.get('/total-visitors-today', async (req, res) => {
   try {
     // Get the current date in the desired time zone
-    const tz = 'YourTimeZone'; // Replace with your desired time zone
+    const tz = 'Asia/Kolkata'; // Replace with your desired time zone
     const currentDate = moment.tz(tz);
 
-    // Specify the date range for the current day
-    const startOfDay = moment.tz(currentDate, tz).startOf('day').toDate();
-    const endOfDay = moment.tz(currentDate, tz).endOf('day').toDate();
+    // Format the current date in "YYYY-MM-DD" format
+    const todayDate = currentDate.format('YYYY-MM-DD');
 
-    // Use MongoDB aggregation to count visitors
-    const totalVisitors = await Visitor.aggregate([
-      {
-        $match: {
-          visitDate: {
-            $gte: startOfDay,
-            $lte: endOfDay,
-          },
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          count: { $sum: 1 },
-        },
-      },
-    ]);
+    // Use MongoDB aggregation to count visitors for today
+    const totalVisitors = await Visitor.countDocuments({ visitDate: todayDate });
 
-    // Extract the count from the aggregation result
-    const countResult = totalVisitors[0] || { count: 0 };
-
-    res.status(200).json({ totalVisitors: countResult.count });
+    res.status(200).json({ totalVisitors });
   } catch (error) {
     res.status(500).json({ error: 'Failed to count total visitors for today' });
   }
 });
-
-
-
 
 
 // Start the Express server
