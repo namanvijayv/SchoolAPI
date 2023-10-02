@@ -562,6 +562,26 @@ io.on('connection', (socket) => {
 });
 
 
+// Define a route to get the latitude and longitude of a bus by its name
+app.get('/bus-location/:name', async (req, res) => {
+  const { name } = req.params;
+
+  try {
+    // Find the bus by name and select only the latitude and longitude fields
+    const bus = await Bus.findOne({ name }, 'latitude longitude');
+
+    if (!bus) {
+      return res.status(404).json({ error: 'Bus not found' });
+    }
+
+    res.json(bus);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
