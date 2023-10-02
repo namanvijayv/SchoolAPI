@@ -497,6 +497,33 @@ app.get('/pieVchart', async (req, res) => {
 });
 
 
+// API endpoint to receive and update bus location
+app.post('/update-location', async (req, res) => {
+  const { name, latitude, longitude } = req.body;
+
+  try {
+    // Find the bus by name
+    const existingBus = await Bus.findOne({ name });
+
+    if (existingBus) {
+      // Update the existing bus's location
+      existingBus.latitude = latitude;
+      existingBus.longitude = longitude;
+      await existingBus.save();
+    } else {
+      // Create a new bus entry if it doesn't exist
+      const newBus = new Bus({ name, latitude, longitude });
+      await newBus.save();
+    }
+
+    res.status(200).json({ message: 'Location updated successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
