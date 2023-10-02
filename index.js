@@ -496,6 +496,14 @@ app.get('/pieVchart', async (req, res) => {
   }
 });
 
+// BUS LOCATION UPDATE
+const busSchema = new mongoose.Schema({
+  name: String,
+  latitude: Number,
+  longitude: Number,
+});
+
+const Bus = mongoose.model('Bus', busSchema);
 
 // API endpoint to receive and update bus location
 app.post('/update-location', async (req, res) => {
