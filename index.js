@@ -582,6 +582,27 @@ app.get('/bus-location/:name', async (req, res) => {
 });
 
 
+// Define a route to list the names of all buses
+app.get('/list-buses', async (req, res) => {
+  try {
+    // Find all buses and return their names
+    const buses = await Bus.find({}, 'name');
+
+    if (!buses) {
+      return res.status(404).json({ error: 'No buses found' });
+    }
+
+    // Extract the names from the buses and create an array
+    const busNames = buses.map((bus) => bus.name);
+
+    res.json(busNames);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
