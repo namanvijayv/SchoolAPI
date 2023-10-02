@@ -6,6 +6,8 @@ const bodyParser = require('body-parser');
 const path = require('path'); // Import the 'path' module
 const { Chart } = require('chart.js');
 const moment = require('moment-timezone');
+const http = require('http');
+const socketIo = require('socket.io');
 
 
 // Create an Express application
@@ -529,6 +531,34 @@ app.post('/update-location', async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Internal server error' });
   }
+});
+
+// Create an HTTP server
+const server = http.createServer(app);
+
+// Create a WebSocket server attached to the HTTP server
+const io = socketIo(server);
+
+// Real-time location updates using WebSocket
+io.on('connection', (socket) => {
+  console.log('A client connected');
+
+  // Emit location updates to connected clients every second
+  setInterval(async () => {
+    try {
+      // Fetch all bus locations from the database
+      const busLocations = await Bus.find({}, 'name latitude longitude');
+
+      // Send the bus locations to connected clients
+      socket.emit('location-update', busLocations);
+    } catch (error) {
+      console.error(error);
+    }
+  }, 1000);
+
+  socket.on('disconnect', () => {
+    console.log('A client disconnected');
+  });
 });
 
 
