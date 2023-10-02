@@ -41,6 +41,8 @@ const studentSchema = new mongoose.Schema({
   address: String,
   loginID: String,
   password: String,
+  presentDates: [Date],
+  absentDates: [Date],
 });
 
 // Pre-save hook to generate loginID and password
@@ -601,6 +603,40 @@ app.get('/list-buses', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+
+app.post('/update-attendance', async (req, res) => {
+  try {
+    const Student = require('./models/Student');
+    
+    const { studentID, date, isPresent } = req.body;
+
+    if (!studentID || !date || isPresent === undefined) {
+      return res.status(400).json({ error: 'Invalid request data' });
+    }
+
+    const student = await Student.findOne({ studentID });
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    if (isPresent) {
+      student.presentDates.push(new Date(date));
+    } else {
+      student.absentDates.push(new Date(date));
+    }
+
+    await student.save();
+
+    res.status(200).json({ message: 'Attendance updated successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to update attendance' });
+  }
+});
+
+
 
 
 // Start the Express server
