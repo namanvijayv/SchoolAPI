@@ -607,15 +607,13 @@ app.get('/list-buses', async (req, res) => {
 
 app.post('/update-attendance', async (req, res) => {
   try {
-    const Student = require('./models/Student');
-    
-    const { studentID, date, isPresent } = req.body;
+    const { loginID, date, isPresent } = req.body;
 
-    if (!studentID || !date || isPresent === undefined) {
+    if (!loginID || !date || isPresent === undefined) {
       return res.status(400).json({ error: 'Invalid request data' });
     }
 
-    const student = await Student.findOne({ studentID });
+    const student = await Student.findOne({ loginID });
 
     if (!student) {
       return res.status(404).json({ error: 'Student not found' });
@@ -635,8 +633,6 @@ app.post('/update-attendance', async (req, res) => {
     res.status(500).json({ error: 'Failed to update attendance' });
   }
 });
-
-
 
 
 // Start the Express server
