@@ -505,9 +505,47 @@ const busSchema = new mongoose.Schema({
   name: String,
   latitude: Number,
   longitude: Number,
+  driver: {
+    name: String,
+    contactNumber: String,
+    busRoute: String,
+    pin: String, // 6-digit pin
+  },
 });
 
 const Bus = mongoose.model('Bus', busSchema);
+
+// Route to add driver details to a bus
+app.post('/add-driver/:busName', async (req, res) => {
+  try {
+    const { busId } = req.params;
+    const { name, contactNumber, busRoute, pin } = req.body;
+
+    // Find the bus by ID
+    // const bus = await Bus.findById(busId);
+    const bus = await Bus.findOne({ name });;
+
+    if (!bus) {
+      return res.status(404).json({ error: 'Bus not found' });
+    }
+
+    // Update driver details
+    bus.driver = {
+      name,
+      contactNumber,
+      busRoute,
+      pin,
+    };
+
+    // Save the updated bus document
+    await bus.save();
+
+    res.status(200).json({ message: 'Driver details added successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to add driver details' });
+  }
+});
 
 // API endpoint to receive and update bus location
 app.post('/update-location', async (req, res) => {
