@@ -547,6 +547,31 @@ app.post('/add-driver/:busName', async (req, res) => {
   }
 });
 
+
+// Route for driver login
+app.post('/driver-login', async (req, res) => {
+  try {
+    const { contactNumber, pin } = req.body;
+
+    // Find the bus with matching driver contact number and pin
+    const bus = await Bus.findOne({
+      'driver.contactNumber': contactNumber,
+      'driver.pin': pin,
+    });
+
+    if (!bus) {
+      return res.status(401).json({ error: 'Login failed. Invalid credentials' });
+    }
+
+    // If the driver is found, return the bus name in the response
+    res.status(200).json({ busName: bus.name });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Login failed. Internal server error' });
+  }
+});
+
+
 // API endpoint to receive and update bus location
 app.post('/update-location', async (req, res) => {
   const { name, latitude, longitude } = req.body;
