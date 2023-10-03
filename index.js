@@ -523,7 +523,7 @@ app.post('/add-driver/:busName', async (req, res) => {
 
     // Find the bus by ID
     // const bus = await Bus.findById(busId);
-    const bus = await Bus.findOne({ name });;
+    const bus = await Bus.findOne({ busId });
 
     if (!bus) {
       return res.status(404).json({ error: 'Bus not found' });
