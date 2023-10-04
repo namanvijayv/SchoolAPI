@@ -721,7 +721,7 @@ app.put('/edit-student/:studentId', async (req, res) => {
   } catch (error) {
     // Handle errors and send an appropriate response
     console.error(error);
-    res.status(500).json({ error: 'Failed to update student' });
+    res.send(error) ;
   }
 });
 
