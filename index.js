@@ -702,8 +702,12 @@ app.post('/update-attendance', async (req, res) => {
 // Define a route to edit a student by ID
 app.put('/edit-student/:studentId', async (req, res) => {
   try {
-    const studentId = req.params.studentId; // Get the student ID from the URL parameters
+    const studentId = req.params.loginID; // Get the student ID from the URL parameters
     const updatedStudentData = req.body; // Get the updated student data from the request body
+        // const loginID = req.params.loginID;
+
+    // Delete the student record from the database using loginID
+    // const deletedStudent = await Student.findOneAndRemove({ loginID: loginID });
 
     // Find the student by their ID and update their information
     const updatedStudent = await Student.findByIdAndUpdate(studentId, updatedStudentData, {
