@@ -698,6 +698,34 @@ app.post('/update-attendance', async (req, res) => {
 });
 
 
+
+// Define a route to edit a student by ID
+app.put('/edit-student/:studentId', async (req, res) => {
+  try {
+    const studentId = req.params.studentId; // Get the student ID from the URL parameters
+    const updatedStudentData = req.body; // Get the updated student data from the request body
+
+    // Find the student by their ID and update their information
+    const updatedStudent = await Student.findByIdAndUpdate(studentId, updatedStudentData, {
+      new: true, // Return the updated student data
+      runValidators: true, // Validate the updated data against the schema
+    });
+
+    if (!updatedStudent) {
+      // If the student with the given ID is not found, return a 404 response
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    // Return the updated student data as a response
+    res.status(200).json(updatedStudent);
+  } catch (error) {
+    // Handle errors and send an appropriate response
+    console.error(error);
+    res.status(500).json({ error: 'Failed to update student' });
+  }
+});
+
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
