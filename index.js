@@ -140,29 +140,6 @@ app.get("/get-classes", async (req, res) => {
   }
 });
 
-// Update a student by loginID
-app.put("/students/loginID/:loginID", async (req, res) => {
-  try {
-    const loginID = req.params.loginID;
-    const updatedData = req.body;
-
-    // Update the student record in the database using loginID
-    const updatedStudent = await Student.findOneAndUpdate(
-      { loginID: loginID },
-      { $set: updatedData },
-      { new: true }
-    );
-
-    if (!updatedStudent) {
-      return res.status(404).json({ error: "Student not found" });
-    }
-
-    res.status(200).json(updatedStudent);
-  } catch (error) {
-    res.status(500).json({ error: "Could not update student" });
-  }
-});
-
 // Delete a student by loginID
 app.delete("/students/loginID/:loginID", async (req, res) => {
   try {
