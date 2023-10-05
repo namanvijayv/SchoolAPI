@@ -186,6 +186,42 @@ app.post("/login", async (req, res) => {
   }
 });
 
+
+app.get('/get-classes-with-loginids', async (req, res) => {
+  try {
+    // Get a list of all distinct classes
+    const classes = await Student.distinct('class');
+
+    if (classes.length === 0) {
+      // If no classes are found, return an empty list
+      return res.status(200).json([]);
+    }
+
+    // Create an array to store class information with loginIDs
+    const classInfoWithLoginIDs = [];
+
+    // Iterate through each class and retrieve students' loginIDs
+    for (const className of classes) {
+      const studentsInClass = await Student.find({ class: className }, 'loginID');
+
+      // Extract the loginIDs from the result
+      const loginIDs = studentsInClass.map(student => student.loginID);
+
+      // Add class information with loginIDs to the array
+      classInfoWithLoginIDs.push({ class: className, loginIDs });
+    }
+
+    // Return the list of classes with loginIDs
+    res.status(200).json(classInfoWithLoginIDs);
+  } catch (error) {
+    // Handle errors and send an appropriate response
+    console.error(error);
+    res.status(500).json({ error: 'Could not fetch classes and loginIDs' });
+  }
+});
+
+
+
 // Define a MongoDB Schema for visitors with separate date and time fields
 const visitorSchema = new mongoose.Schema({
   name: String,
