@@ -699,24 +699,20 @@ app.post('/update-attendance', async (req, res) => {
 
 
 
-// Define a route to edit a student by ID
-app.put('/edit-student/:studentId', async (req, res) => {
+// Define a route to edit a student by loginID
+app.put('/edit-student/:loginID', async (req, res) => {
   try {
-    const studentId = req.params.loginID; // Get the student ID from the URL parameters
+    const loginID = req.params.loginID; // Get the loginID from the URL parameters
     const updatedStudentData = req.body; // Get the updated student data from the request body
-        // const loginID = req.params.loginID;
 
-    // Delete the student record from the database using loginID
-    // const deletedStudent = await Student.findOneAndRemove({ loginID: loginID });
-
-    // Find the student by their ID and update their information
-    const updatedStudent = await Student.findByIdAndUpdate(studentId, updatedStudentData, {
+    // Find the student by their loginID and update their information
+    const updatedStudent = await Student.findOneAndUpdate({ loginID }, updatedStudentData, {
       new: true, // Return the updated student data
       runValidators: true, // Validate the updated data against the schema
     });
 
     if (!updatedStudent) {
-      // If the student with the given ID is not found, return a 404 response
+      // If the student with the given loginID is not found, return a 404 response
       return res.status(404).json({ error: 'Student not found' });
     }
 
@@ -725,9 +721,10 @@ app.put('/edit-student/:studentId', async (req, res) => {
   } catch (error) {
     // Handle errors and send an appropriate response
     console.error(error);
-    res.send(error) ;
+    res.status(500).json({ error: 'Failed to update student' });
   }
 });
+
 
 
 // Start the Express server
