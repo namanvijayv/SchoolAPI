@@ -740,6 +740,99 @@ app.put('/edit-student/:loginID', async (req, res) => {
 
 
 
+// Define a mongoose schema for teachers
+const teacherSchema = new mongoose.Schema({
+  name: String,
+  mobile: String,
+  maritalStatus: String,
+  address: String,
+  gender: String,
+  religion: String,
+  post: String,
+  subject: String,
+  joiningDate: Date,
+  salary: Number,
+  inTime: String,
+  outTime: String,
+  present: [Date],
+  absent: [Date],
+  loginID: String,
+  password: String,
+});
+
+const Teacher = mongoose.model('Teacher', teacherSchema);
+
+// Route to add a teacher
+app.post('/add-teacher', async (req, res) => {
+  try {
+    const {
+      name,
+      mobile,
+      maritalStatus,
+      address,
+      gender,
+      religion,
+      post,
+      subject,
+      joiningDate,
+      salary,
+      inTime,
+      outTime,
+    } = req.body;
+
+    // Generate a random 6-digit alphanumeric loginID
+    const loginID = generateRandomLoginID();
+
+    // Generate a random 6-digit password
+    const password = generateRandomPassword();
+
+    // Create a new teacher object
+    const teacher = new Teacher({
+      name,
+      mobile,
+      maritalStatus,
+      address,
+      gender,
+      religion,
+      post,
+      subject,
+      joiningDate,
+      salary,
+      inTime,
+      outTime,
+      present: [],
+      absent: [],
+      loginID,
+      password,
+    });
+
+    // Save the teacher to the database
+    await teacher.save();
+
+    res.status(201).json({ message: 'Teacher added successfully', teacher });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Could not add teacher' });
+  }
+});
+
+// Helper function to generate a random 6-digit alphanumeric string
+function generateRandomLoginID() {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let loginID = '';
+  for (let i = 0; i < 6; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    loginID += characters.charAt(randomIndex);
+  }
+  return loginID;
+}
+
+// Helper function to generate a random 6-digit numeric password
+function generateRandomPassword() {
+  const password = Math.floor(100000 + Math.random() * 900000).toString();
+  return password;
+}
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
