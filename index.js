@@ -849,6 +849,27 @@ app.get('/teachers', async (req, res) => {
   }
 });
 
+// Add a route to get a teacher's details by login ID
+app.get('/teachers/:loginID', async (req, res) => {
+  try {
+    const loginID = req.params.loginID; // Get the login ID from the request parameters
+    
+    // Retrieve the teacher record with the specified login ID from the database
+    const teacher = await Teacher.findOne({ loginID: loginID });
+    
+    // Check if a teacher with the provided login ID exists
+    if (!teacher) {
+      return res.status(404).json({ error: 'Teacher not found' });
+    }
+
+    // Send the teacher's details as a JSON response
+    res.status(200).json(teacher);
+  } catch (error) {
+    // Handle any errors that occur during the database query
+    res.status(500).json({ error: 'Could not fetch teacher details' });
+  }
+});
+
 
 // Start the Express server
 app.listen(port, () => {
