@@ -740,7 +740,6 @@ app.put('/edit-student/:loginID', async (req, res) => {
 
 
 
-// Define a mongoose schema for teachers
 const teacherSchema = new mongoose.Schema({
   name: String,
   mobile: String,
@@ -752,13 +751,31 @@ const teacherSchema = new mongoose.Schema({
   subject: String,
   joiningDate: Date,
   salary: Number,
-  inTime: String,
-  outTime: String,
-  present: [Date],
+  present: [
+    {
+      date: String,  // Date of the presence in "YYYY-MM-DD" format
+      record: {
+        punchInTime: String,
+        punchOutTime: String,
+        totalWorkHours: String,
+      },
+    },
+  ],
   absent: [Date],
   loginID: String,
   password: String,
 });
+// Define a method to calculate and set the total work hours
+teacherSchema.methods.calculateTotalWorkHours = function () {
+  this.present.forEach((presence) => {
+    const punchIn = new Date(`2023-09-30 ${presence.punchInTime}`);
+    const punchOut = new Date(`2023-09-30 ${presence.punchOutTime}`);
+    const timeDiffMs = punchOut - punchIn;
+    const hours = Math.floor(timeDiffMs / 1000 / 60 / 60);
+    const minutes = Math.floor((timeDiffMs / 1000 / 60) % 60);
+    presence.totalWorkHours = `${hours} hours ${minutes} minutes`;
+  });
+};
 
 const Teacher = mongoose.model('Teacher', teacherSchema);
 
@@ -835,20 +852,6 @@ function generateRandomPassword() {
 
 // Import necessary modules and set up your Express app
 
-// Add a route to get all teachers
-app.get('/teachers', async (req, res) => {
-  try {
-    // Retrieve all teacher records from the database
-    const teachers = await Teacher.find();
-    
-    // Send the list of teachers as a JSON response
-    res.status(200).json(teachers);
-  } catch (error) {
-    // Handle any errors that occur during the database query
-    res.status(500).json({ error: 'Could not fetch teachers' });
-  }
-});
-
 // Add a route to get a teacher's details by login ID
 app.get('/teachers/:loginID', async (req, res) => {
   try {
@@ -870,6 +873,122 @@ app.get('/teachers/:loginID', async (req, res) => {
   }
 });
 
+
+app.get('/punch-in/:loginID', async (req, res) => {
+  try {
+    const loginID = req.params.loginID;
+
+    // Get the current date in "YYYY-MM-DD" format
+    const currentDate = moment().tz('Asia/Kolkata').format('YYYY-MM-DD');
+    const currentTime = moment().tz('Asia/Kolkata').format('hh:mm:ss A');
+
+    // Find the teacher by loginID
+    const existingTeacher = await Teacher.findOne({ loginID });
+
+    if (!existingTeacher) {
+      return res.status(404).json({ error: 'Teacher not found' });
+    }
+
+    // Check if there is already a punch-in entry for the current date
+    const existingPunchIn = existingTeacher.present.find((presence) => {
+      return presence.date === currentDate && presence.record.punchOutTime === '';
+    });
+
+    if (existingPunchIn) {
+      return res.status(400).json({ error: 'Punch-in already recorded for today' });
+    }
+
+    // Check if there is a punch-in entry for today with a punch-out time
+    const todayPunchIn = existingTeacher.present.find((presence) => {
+      return presence.date === currentDate && presence.record.punchOutTime !== '';
+    });
+
+    if (todayPunchIn) {
+      return res.status(400).json({ error: 'Punch-in cannot be recorded for today as punch-out is already recorded' });
+    }
+
+    // Create a new presence entry
+    const newPresence = {
+      date: currentDate,
+      record: {
+        punchInTime: currentTime,
+        punchOutTime: '',
+        totalWorkHours: '',
+      },
+    };
+
+    // Add the new presence entry to the teacher's presence array
+    existingTeacher.present.push(newPresence);
+
+    // Save the updated teacher record
+    await existingTeacher.save();
+
+    res.status(200).json({
+      message: 'Punch-in recorded successfully',
+      punchInDate: currentDate,
+      punchInTime: currentTime,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/punch-out/:loginID', async (req, res) => {
+  try {
+    const loginID = req.params.loginID;
+
+    // Get the current date in "YYYY-MM-DD" format
+    const currentDate = moment().tz('Asia/Kolkata').format('YYYY-MM-DD');
+    const currentTime = moment().tz('Asia/Kolkata').format('hh:mm:ss A');
+
+    // Find the teacher by loginID
+    const existingTeacher = await Teacher.findOne({ loginID });
+
+    if (!existingTeacher) {
+      return res.status(404).json({ error: 'Teacher not found' });
+    }
+
+    // Check if there is already a punch-out entry for the current date
+    const existingPunchOut = existingTeacher.present.find((presence) => {
+      return presence.date === currentDate && presence.record.punchOutTime !== '';
+    });
+
+    if (existingPunchOut) {
+      return res.status(400).json({ error: 'Punch-out already recorded for today' });
+    }
+
+    // Find the last punch-in entry for today
+    const todayPunchIn = existingTeacher.present.find((presence) => {
+      return presence.date === currentDate && presence.record.punchOutTime === '';
+    });
+
+    if (!todayPunchIn) {
+      return res.status(400).json({ error: 'Punch-out cannot be recorded without a punch-in entry for today' });
+    }
+
+    // Update the punch-out time for the last punch-in entry
+    todayPunchIn.record.punchOutTime = currentTime;
+
+    // Calculate and set the total work hours
+    const punchIn = moment(`2023-09-30 ${todayPunchIn.record.punchInTime}`);
+    const punchOut = moment(`2023-09-30 ${todayPunchIn.record.punchOutTime}`);
+    const duration = moment.duration(punchOut.diff(punchIn));
+    todayPunchIn.record.totalWorkHours = `${Math.floor(duration.asHours())} hours ${duration.minutes()} minutes`;
+
+    // Save the updated teacher record
+    await existingTeacher.save();
+
+    res.status(200).json({
+      message: 'Punch-out recorded successfully',
+      punchOutDate: currentDate,
+      punchOutTime: currentTime,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // Start the Express server
 app.listen(port, () => {
