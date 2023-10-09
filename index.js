@@ -990,6 +990,43 @@ app.get('/punch-out/:loginID', async (req, res) => {
   }
 });
 
+// For marking a teacher as absent
+app.get('/absent/:loginID', async (req, res) => {
+  try {
+    const loginID = req.params.loginID;
+
+    // Get the current date in "YYYY-MM-DD" format
+    const currentDate = moment().tz('Asia/Kolkata').format('YYYY-MM-DD');
+
+    // Find the teacher by loginID
+    const existingTeacher = await Teacher.findOne({ loginID });
+
+    if (!existingTeacher) {
+      return res.status(404).json({ error: 'Teacher not found' });
+    }
+
+    // Check if the teacher is already marked as absent for the current date
+    if (existingTeacher.absent.includes(currentDate)) {
+      return res.status(400).json({ error: 'Teacher is already marked as absent for today' });
+    }
+
+    // Mark the teacher as absent for the current date
+    existingTeacher.absent.push(currentDate);
+
+    // Save the changes to the database
+    await existingTeacher.save();
+
+    res.status(200).json({
+      message: 'Teacher marked as absent for today',
+      absentDate: currentDate,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
