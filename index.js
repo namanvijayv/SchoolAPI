@@ -1026,6 +1026,25 @@ app.get('/absent/:loginID', async (req, res) => {
   }
 });
 
+app.get('/teachers', async (req, res) => {
+  try {
+    // Fetch all teachers' data from MongoDB
+    const teachers = await Teacher.find();
+
+    // Check if there are no teachers in the database
+    if (teachers.length === 0) {
+      return res.status(404).json({ error: 'No teachers found' });
+    }
+
+    // Send the list of teachers as a JSON response
+    res.status(200).json(teachers);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Could not fetch teachers' });
+  }
+});
+
+
 
 // Start the Express server
 app.listen(port, () => {
