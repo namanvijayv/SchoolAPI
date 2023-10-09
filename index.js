@@ -751,6 +751,8 @@ const teacherSchema = new mongoose.Schema({
   subject: String,
   joiningDate: Date,
   salary: Number,
+  inTime : String,
+  outTime : String,
   present: [
     {
       date: String,  // Date of the presence in "YYYY-MM-DD" format
