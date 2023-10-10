@@ -1047,7 +1047,7 @@ app.get('/teachers', async (req, res) => {
   }
 });
 
-//Teachers Work-Time Graph
+//-----------Teachers Work-Time Graph------------
 app.get('/teacher-chart/:loginID', async (req, res) => {
   try {
     // Retrieve the loginID from the route parameters
@@ -1144,7 +1144,57 @@ app.get('/teacher-chart/:loginID', async (req, res) => {
   }
 });
 
+//-------Pie-Chart for the Attendence---------
+app.get('/teacher-status-chart/:loginID', async (req, res) => {
+  try {
+    // Retrieve the loginID from the route parameters
+    const { loginID } = req.params;
 
+    // Fetch the teacher's data from MongoDB based on the provided loginID
+    const teacher = await Teacher.findOne({ loginID });
+
+    if (!teacher) {
+      return res.status(404).json({ error: 'Teacher not found' });
+    }
+
+    // Count the number of present and absent entries for the teacher
+    const presentCount = teacher.present.length;
+    const absentCount = teacher.absent.length;
+
+    // Generate the chart as HTML
+    const chartHtml = `
+      <html>
+        <head>
+          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        </head>
+        <body>
+          <canvas id="statusChart" width="400" height="200"></canvas>
+          <script>
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            const chartConfig = {
+              type: 'pie',
+              data: {
+                labels: ['Present', 'Absent'],
+                datasets: [{
+                  data: [${presentCount}, ${absentCount}],
+                  backgroundColor: ['green', 'red'],
+                }],
+              },
+            };
+            new Chart(ctx, chartConfig);
+          </script>
+        </body>
+      </html>
+    `;
+
+    // Set the content type to HTML and send the chart as an HTML response
+    res.setHeader('Content-Type', 'text/html');
+    res.status(200).send(chartHtml);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Could not generate chart' });
+  }
+});
 
 // Start the Express server
 app.listen(port, () => {
