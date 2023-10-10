@@ -1047,6 +1047,103 @@ app.get('/teachers', async (req, res) => {
   }
 });
 
+//Teachers Work-Time Graph
+app.get('/teacher-chart/:loginID', async (req, res) => {
+  try {
+    // Retrieve the loginID from the route parameters
+    const { loginID } = req.params;
+
+    // Fetch the teacher's data from MongoDB based on the provided loginID
+    const teacher = await Teacher.findOne({ loginID });
+
+    if (!teacher) {
+      return res.status(404).json({ error: 'Teacher not found' });
+    }
+
+    // Extract the relevant data for the chart
+    const dates = teacher.present.map((presence) => presence.date);
+    const totalWorkHours = teacher.present.map((presence) => {
+      // Extract hours and minutes from the totalWorkHours string
+      const match = presence.record.totalWorkHours.match(/(\d+) hours (\d+) minutes/);
+      if (match) {
+        const hours = parseInt(match[1], 10);
+        const minutes = parseInt(match[2], 10);
+        // Convert to total hours and minutes
+        return hours + minutes / 60;
+      } else {
+        return 0; // Handle invalid totalWorkHours format
+      }
+    });
+
+    // Create a constant background color for the bars
+    const backgroundColor = 'rgba(75, 192, 192, 0.2)';
+
+    // Generate the chart as HTML
+    const chartHtml = `
+      <html>
+        <head>
+          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        </head>
+        <body>
+          <canvas id="teacherChart" width="400" height="200"></canvas>
+          <script>
+            const ctx = document.getElementById('teacherChart').getContext('2d');
+            const chartConfig = {
+              type: 'bar',
+              data: {
+                labels: ${JSON.stringify(dates)},
+                datasets: [{
+                  label: 'Total Work Hours',
+                  data: ${JSON.stringify(totalWorkHours)},
+                  backgroundColor: '${backgroundColor}', // Use a constant background color
+                  borderColor: '${backgroundColor}',
+                  borderWidth: 1,
+                }],
+              },
+              options: {
+                scales: {
+                  y: {
+                    beginAtZero: false, // Adjust this to false
+                    ticks: {
+                      callback: function (value, index, values) {
+                        // Format the y-axis labels as hours and minutes
+                        const hours = Math.floor(value);
+                        const minutes = Math.round((value - hours) * 60);
+                        return hours + ' hr ' + minutes + ' min';
+                      },
+                    },
+                  },
+                },
+                plugins: {
+                  tooltip: {
+                    callbacks: {
+                      label: function (context) {
+                        // Format the tooltip label as hours and minutes
+                        const value = context.parsed.y;
+                        const hours = Math.floor(value);
+                        const minutes = Math.round((value - hours) * 60);
+                        return hours + ' hr ' + minutes + ' min';
+                      },
+                    },
+                  },
+                },
+              },
+            };
+            new Chart(ctx, chartConfig);
+          </script>
+        </body>
+      </html>
+    `;
+
+    // Set the content type to HTML and send the chart as an HTML response
+    res.setHeader('Content-Type', 'text/html');
+    res.status(200).send(chartHtml);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Could not generate chart' });
+  }
+});
+
 
 
 // Start the Express server
