@@ -738,8 +738,7 @@ app.put('/edit-student/:loginID', async (req, res) => {
   }
 });
 
-
-
+//Route for Teachers starts from here
 const teacherSchema = new mongoose.Schema({
   name: String,
   mobile: String,
@@ -751,11 +750,11 @@ const teacherSchema = new mongoose.Schema({
   subject: String,
   joiningDate: Date,
   salary: Number,
-  inTime : String,
-  outTime : String,
+  inTime: String,
+  outTime: String,
   present: [
     {
-      date: String,  // Date of the presence in "YYYY-MM-DD" format
+      date: String, // Date of the presence in "YYYY-MM-DD" format
       record: {
         punchInTime: String,
         punchOutTime: String,
@@ -779,10 +778,10 @@ teacherSchema.methods.calculateTotalWorkHours = function () {
   });
 };
 
-const Teacher = mongoose.model('Teacher', teacherSchema);
+const Teacher = mongoose.model("Teacher", teacherSchema);
 
 // Route to add a teacher
-app.post('/add-teacher', async (req, res) => {
+app.post("/add-teacher", async (req, res) => {
   try {
     const {
       name,
@@ -798,6 +797,10 @@ app.post('/add-teacher', async (req, res) => {
       inTime, // Ensure inTime and outTime are included in the request body
       outTime,
     } = req.body;
+
+    // Log the values of inTime and outTime to debug
+    console.log("inTime:", inTime);
+    console.log("outTime:", outTime);
 
     // Generate a random 6-digit alphanumeric loginID
     const loginID = generateRandomLoginID();
@@ -817,7 +820,7 @@ app.post('/add-teacher', async (req, res) => {
       subject,
       joiningDate,
       salary,
-      inTime, // Include inTime and outTime in the teacher document
+      inTime,
       outTime,
       present: [],
       absent: [],
@@ -828,18 +831,17 @@ app.post('/add-teacher', async (req, res) => {
     // Save the teacher to the database
     await teacher.save();
 
-    res.status(201).json({ message: 'Teacher added successfully', teacher });
+    res.status(201).json({ message: "Teacher added successfully", teacher });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Could not add teacher' });
+    res.status(500).json({ error: "Could not add teacher" });
   }
 });
 
-
 // Helper function to generate a random 6-digit alphanumeric string
 function generateRandomLoginID() {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let loginID = '';
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let loginID = "";
   for (let i = 0; i < 6; i++) {
     const randomIndex = Math.floor(Math.random() * characters.length);
     loginID += characters.charAt(randomIndex);
@@ -852,6 +854,7 @@ function generateRandomPassword() {
   const password = Math.floor(100000 + Math.random() * 900000).toString();
   return password;
 }
+
 
 // Import necessary modules and set up your Express app
 
