@@ -795,7 +795,7 @@ app.post('/add-teacher', async (req, res) => {
       subject,
       joiningDate,
       salary,
-      inTime,
+      inTime, // Ensure inTime and outTime are included in the request body
       outTime,
     } = req.body;
 
@@ -805,7 +805,7 @@ app.post('/add-teacher', async (req, res) => {
     // Generate a random 6-digit password
     const password = generateRandomPassword();
 
-    // Create a new teacher object
+    // Create a new teacher object with inTime and outTime included
     const teacher = new Teacher({
       name,
       mobile,
@@ -817,7 +817,7 @@ app.post('/add-teacher', async (req, res) => {
       subject,
       joiningDate,
       salary,
-      inTime,
+      inTime, // Include inTime and outTime in the teacher document
       outTime,
       present: [],
       absent: [],
@@ -834,6 +834,7 @@ app.post('/add-teacher', async (req, res) => {
     res.status(500).json({ error: 'Could not add teacher' });
   }
 });
+
 
 // Helper function to generate a random 6-digit alphanumeric string
 function generateRandomLoginID() {
