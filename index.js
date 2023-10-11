@@ -41,8 +41,8 @@ const studentSchema = new mongoose.Schema({
   address: String,
   loginID: String,
   password: String,
-  presentDates: [Date],
-  absentDates: [Date],
+  presentDates: [String],
+  absentDates: [String],
 });
 
 // Pre-save hook to generate loginID and password
@@ -1246,6 +1246,85 @@ app.get('/get-students/:class', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch students' });
   }
 });
+
+
+//--------Present and Absent-----------
+// Route to mark a student as present with the current date in "DD-MM-YYYY" format
+app.get('/mark-present/:loginID', async (req, res) => {
+  try {
+    const { loginID } = req.params;
+
+    // Get the current date in "DD-MM-YYYY" format
+    const currentDate = new Date().toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).split('/').reverse().join('-');
+
+    // Find the student by loginID
+    const student = await Student.findOne({ loginID });
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    // Add the current date to the presentDates array
+    student.presentDates.push(currentDate);
+
+    // Remove the current date from the absentDates array (if it exists)
+    const dateIndex = student.absentDates.indexOf(currentDate);
+    if (dateIndex !== -1) {
+      student.absentDates.splice(dateIndex, 1);
+    }
+
+    // Save the updated student data
+    await student.save();
+
+    res.status(200).json({ message: 'Student marked as present', student });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to mark student as present' });
+  }
+});
+
+// Route to mark a student as absent with the current date in "DD-MM-YYYY" format
+app.get('/mark-student-absent/:loginID', async (req, res) => {
+  try {
+    const { loginID } = req.params;
+
+    // Get the current date in "DD-MM-YYYY" format
+    const currentDate = new Date().toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).split('/').reverse().join('-');
+
+    // Find the student by loginID
+    const student = await Student.findOne({ loginID });
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    // Add the current date to the absentDates array
+    student.absentDates.push(currentDate);
+
+    // Remove the current date from the presentDates array (if it exists)
+    const dateIndex = student.presentDates.indexOf(currentDate);
+    if (dateIndex !== -1) {
+      student.presentDates.splice(dateIndex, 1);
+    }
+
+    // Save the updated student data
+    await student.save();
+
+    res.status(200).json({ message: 'Student marked as absent', student });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to mark student as absent' });
+  }
+});
+
 
 // Start the Express server
 app.listen(port, () => {
