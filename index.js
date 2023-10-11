@@ -1288,7 +1288,7 @@ app.get('/mark-present/:loginID', async (req, res) => {
 });
 
 // Route to mark a student as absent with the current date in "DD-MM-YYYY" format
-app.get('/mark-student-absent/:loginID', async (req, res) => {
+app.get('/mark-absent/:loginID', async (req, res) => {
   try {
     const { loginID } = req.params;
 
