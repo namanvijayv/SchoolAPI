@@ -1199,6 +1199,30 @@ app.get('/teacher-status-chart/:loginID', async (req, res) => {
   }
 });
 
+app.post('/teacher-login', async (req, res) => {
+  try {
+    const { loginID, password } = req.body;
+
+    // Search for a teacher with the provided loginID and password
+    const teacher = await Teacher.findOne({ loginID, password });
+
+    if (teacher) {
+      // Teacher found, generate an authentication token if needed
+      // You can use authentication libraries like JWT to create a token
+
+      // Respond with a success message or token
+      res.status(200).json({ message: 'Teacher logged in successfully' });
+    } else {
+      // Teacher not found or invalid credentials
+      res.status(401).json({ error: 'Invalid login credentials' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
