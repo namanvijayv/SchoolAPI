@@ -1222,6 +1222,30 @@ app.post('/teacher-login', async (req, res) => {
   }
 });
 
+//--------Get Student of a class---------
+app.get('/get-students/:class', async (req, res) => {
+  try {
+    const className = parseInt(req.params.class);
+
+    // Find students in the specified class
+    const students = await Student.find({ class: className });
+
+    if (students.length === 0) {
+      return res.status(404).json({ message: 'No students found in this class' });
+    }
+
+    // Extract loginID and name of each student
+    const studentData = students.map(student => ({
+      loginID: student.loginID,
+      name: student.name
+    }));
+
+    res.status(200).json(studentData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch students' });
+  }
+});
 
 // Start the Express server
 app.listen(port, () => {
