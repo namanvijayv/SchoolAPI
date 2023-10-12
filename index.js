@@ -1593,6 +1593,23 @@ app.get('/yearly-attendance/:loginID/:year', async (req, res) => {
   }
 });
 
+// Import necessary modules and set up your Express app
+
+// Add a route to get all teachers
+app.get('/teachers', async (req, res) => {
+  try {
+    // Retrieve all teacher records from the database
+    const teachers = await Teacher.find();
+    
+    // Send the list of teachers as a JSON response
+    res.status(200).json(teachers);
+  } catch (error) {
+    // Handle any errors that occur during the database query
+    res.status(500).json({ error: 'Could not fetch teachers' });
+  }
+});
+
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
