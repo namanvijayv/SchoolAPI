@@ -1225,19 +1225,20 @@ app.post('/teacher-login', async (req, res) => {
 //--------Get Student of a class---------
 app.get('/get-students/:class', async (req, res) => {
   try {
-    const className = parseInt(req.params.class);
+    const classInfo = req.params.class; // Assuming the parameter is formatted as "class-section"
 
-    // Find students in the specified class
-    const students = await Student.find({ class: className });
+    // Find students in the specified class and section
+    const students = await Student.find({ class: classInfo });
 
     if (students.length === 0) {
       return res.status(404).json({ message: 'No students found in this class' });
     }
 
-    // Extract loginID and name of each student
+    // Extract loginID, name, and classInfo of each student
     const studentData = students.map(student => ({
       loginID: student.loginID,
-      name: student.name
+      name: student.name,
+      classInfo: student.class+"-"+student.section
     }));
 
     res.status(200).json(studentData);
