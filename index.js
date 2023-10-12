@@ -49,6 +49,11 @@ const studentSchema = new mongoose.Schema({
       time: String,   // Time of the event
       reason: String, // Reason for the event
     },
+    announcement: [
+    {
+      date: String,   // Date of the event in "DD-MM-YYYY" format
+      reason: String, // Reason for the event
+    },
   ],
 });
 
@@ -1606,6 +1611,39 @@ app.get('/teachers', async (req, res) => {
   } catch (error) {
     // Handle any errors that occur during the database query
     res.status(500).json({ error: 'Could not fetch teachers' });
+  }
+});
+
+
+//Notifications By teacher and visible to students
+app.post('/create-announcement/:class/:section', async (req, res) => {
+  try {
+    const { class: section } = req.params;
+    const { reason, date } = req.body;
+
+    // Construct the event data
+    const eventData = {
+      reason: reason,
+      date: date,   // Format the date as needed
+    };
+
+    // Find students in the specified class and section
+    const students = await Student.find({ class: section });
+
+    if (students.length === 0) {
+      return res.status(404).json({ message: 'No students found in this class and section' });
+    }
+
+    // Add the notification to each student's notifications array
+    students.forEach(async (student) => {
+      student.announcement.push(eventData);
+      await student.save();
+    });
+
+    res.status(201).json({ message: 'Announcement created and sent to students' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to create and send notifications' });
   }
 });
 
