@@ -738,7 +738,7 @@ app.put('/edit-student/:loginID', async (req, res) => {
   }
 });
 
-//Route for Teachers starts from here
+//===================Teachers Start=========================
 const teacherSchema = new mongoose.Schema({
   name: String,
   mobile: String,
@@ -754,7 +754,7 @@ const teacherSchema = new mongoose.Schema({
   outTime: String,
   present: [
     {
-      date: String, // Date of the presence in "YYYY-MM-DD" format
+      date: String,
       record: {
         punchInTime: String,
         punchOutTime: String,
@@ -765,7 +765,17 @@ const teacherSchema = new mongoose.Schema({
   absent: [Date],
   loginID: String,
   password: String,
+  leaveRequests: [
+    {
+      startDate: String, // Start date of the leave request
+      endDate: String,   // End date of the leave request
+      reason: String,  // Reason for leave
+      status: String,  // Status of the leave request (e.g., 'pending', 'approved', 'rejected')
+    },
+  ],
 });
+
+
 // Define a method to calculate and set the total work hours
 teacherSchema.methods.calculateTotalWorkHours = function () {
   this.present.forEach((presence) => {
@@ -1325,6 +1335,98 @@ app.get('/mark-absent/:loginID', async (req, res) => {
     res.status(500).json({ error: 'Failed to mark student as absent' });
   }
 });
+
+
+// LEAVE Request
+// POST route to submit a leave request
+app.post('/submit-leave-request/:loginID', async (req, res) => {
+  try {
+    const { loginID } = req.params;
+    const { startDate, endDate, reason } = req.body;
+
+    // Find the teacher based on their loginID
+    const teacher = await Teacher.findOne({ loginID });
+
+    if (!teacher) {
+      return res.status(404).json({ error: 'Teacher not found' });
+    }
+
+    // Create a new leave request
+    const leaveRequest = {
+      startDate,
+      endDate,
+      reason,
+      status: 'pending',
+    };
+
+    // Add the leave request to the teacher's leaveRequests array
+    teacher.leaveRequests.push(leaveRequest);
+
+    // Save the updated teacher document
+    await teacher.save();
+
+    res.status(201).json({ message: 'Leave request submitted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to submit leave request' });
+  }
+});
+
+// GET route to retrieve leave requests for a teacher
+app.get('/leave-requests/:loginID', async (req, res) => {
+  try {
+    const { loginID } = req.params;
+
+    // Find the teacher based on their loginID
+    const teacher = await Teacher.findOne({ loginID });
+
+    if (!teacher) {
+      return res.status(404).json({ error: 'Teacher not found' });
+    }
+
+    // Get the leave requests for the teacher
+    const leaveRequests = teacher.leaveRequests;
+
+    res.status(200).json(leaveRequests);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch leave requests' });
+  }
+});
+
+// PUT route to update the status of a leave request
+app.put('/leave-request/:loginID/:requestID', async (req, res) => {
+  try {
+    const { loginID, requestID } = req.params;
+    const { status } = req.body;
+
+    // Find the teacher based on their loginID
+    const teacher = await Teacher.findOne({ loginID });
+
+    if (!teacher) {
+      return res.status(404).json({ error: 'Teacher not found' });
+    }
+
+    // Find the leave request by its ID
+    const leaveRequest = teacher.leaveRequests.id(requestID);
+
+    if (!leaveRequest) {
+      return res.status(404).json({ error: 'Leave request not found' });
+    }
+
+    // Update the status of the leave request
+    leaveRequest.status = status;
+
+    // Save the updated teacher document
+    await teacher.save();
+
+    res.status(200).json({ message: 'Leave request status updated successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to update leave request status' });
+  }
+});
+
 
 
 // Start the Express server
