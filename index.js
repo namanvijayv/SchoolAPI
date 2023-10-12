@@ -48,7 +48,7 @@ const studentSchema = new mongoose.Schema({
       date: String,   // Date of the event in "DD-MM-YYYY" format
       time: String,   // Time of the event
       reason: String, // Reason for the event
-    }},
+    }],
     announcement: [
     {
       date: String,   // Date of the event in "DD-MM-YYYY" format
