@@ -1652,6 +1652,51 @@ app.post('/create-announcement/:class/:section', async (req, res) => {
 });
 
 
+app.get('/yearlyMonthAttendance/:loginID/:year', async (req, res) => {
+  try {
+    const { loginID, year } = req.params;
+
+    // Find the teacher by loginID
+    const teacher = await Teacher.findOne({ loginID });
+
+    if (!teacher) {
+      return res.status(404).json({ message: 'Teacher not found' });
+    }
+
+    const yearlyAttendance = [];
+
+    for (let month = 1; month <= 12; month++) {
+      const totalDays = getDaysInMonth(year, month);
+      const workingDays = totalDays - getSundaysInMonth(year, month);
+      const presentCount = teacher.present.filter((entry) => {
+        const entryDate = moment(entry.date, 'YYYY-MM-DD');
+        return entryDate.year() == year && entryDate.month() == month - 1;
+      }).length;
+
+      const monthYearly = {
+        totalDays,
+        workingDays,
+        totalSundays: getSundaysInMonth(year, month),
+        presentCount,
+        month,
+        year,
+      };
+
+      yearlyAttendance.push(monthYearly);
+    }
+
+    const totalYearlyAttendance = {
+      year,
+      months: yearlyAttendance,
+    };
+
+    res.status(200).json(totalYearlyAttendance);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch yearly attendance' });
+  }
+});
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
