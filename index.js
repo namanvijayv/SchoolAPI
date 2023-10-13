@@ -784,8 +784,9 @@ const teacherSchema = new mongoose.Schema({
       startDate: String, // Start date of the leave request
       endDate: String,   // End date of the leave request
       reason: String,  // Reason for leave
-      status: String,  // Status of the leave request (e.g., 'pending', 'approved', 'rejected')
       type:String
+      classTeacher : String,
+      status: String,  // Status of the leave request (e.g., 'pending', 'approved', 'rejected')
     },
   ],
 });
@@ -1379,7 +1380,7 @@ app.get('/mark-student-absent/:loginID', async (req, res) => {
 app.post('/submit-leave-request/:loginID', async (req, res) => {
   try {
     const { loginID } = req.params;
-    const { startDate, endDate, reason } = req.body;
+    const { startDate, endDate, reason, type, classTeacher } = req.body;
 
     // Find the teacher based on their loginID
     const teacher = await Teacher.findOne({ loginID });
@@ -1393,8 +1394,9 @@ app.post('/submit-leave-request/:loginID', async (req, res) => {
       startDate,
       endDate,
       reason,
-      status: 'pending',
       type,
+      classTeacher,
+      status: 'pending',
     };
 
     // Add the leave request to the teacher's leaveRequests array
