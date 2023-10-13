@@ -102,7 +102,7 @@ app.post("/students", async (req, res) => {
     });
 
     await student.save();
-    res.status(201).json(student);
+    res.status(200).json(student);
   } catch (error) {
     res.status(500).json({ error: "Could not save student" });
     console.log(error);
@@ -854,7 +854,7 @@ app.post("/add-teacher", async (req, res) => {
     // Save the teacher to the database
     await teacher.save();
 
-    res.status(201).json({ message: "Teacher added successfully", teacher });
+    res.status(200).json({ message: "Teacher added successfully", teacher });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Could not add teacher" });
@@ -1401,7 +1401,7 @@ app.post('/submit-leave-request/:loginID', async (req, res) => {
     // Save the updated teacher document
     await teacher.save();
 
-    res.status(201).json({ message: 'Leave request submitted successfully' });
+    res.status(200).json({ message: 'Leave request submitted successfully' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to submit leave request' });
@@ -1490,7 +1490,7 @@ app.post('/create-notification/:class/:section', async (req, res) => {
       await student.save();
     });
 
-    res.status(201).json({ message: 'Notification created and sent to students' });
+    res.status(200).json({ message: 'Notification created and sent to students' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to create and send notifications' });
@@ -1640,7 +1640,7 @@ app.post('/create-announcement/:class/:section', async (req, res) => {
       await student.save();
     });
 
-    res.status(201).json({ message: 'Announcement created and sent to students' });
+    res.status(200).json({ message: 'Announcement created and sent to students' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to create and send notifications' });
