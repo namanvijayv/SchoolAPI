@@ -1663,22 +1663,27 @@ app.get('/yearlyMonthAttendance/:loginID/:year', async (req, res) => {
       return res.status(404).json({ message: 'Teacher not found' });
     }
 
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
     const yearlyAttendance = [];
 
-    for (let month = 1; month <= 12; month++) {
-      const totalDays = getDaysInMonth(year, month);
-      const workingDays = totalDays - getSundaysInMonth(year, month);
+    for (let month = 0; month < 12; month++) {
+      const totalDays = getDaysInMonth(year, month + 1);
+      const workingDays = totalDays - getSundaysInMonth(year, month + 1);
       const presentCount = teacher.present.filter((entry) => {
         const entryDate = moment(entry.date, 'YYYY-MM-DD');
-        return entryDate.year() == year && entryDate.month() == month - 1;
+        return entryDate.year() == year && entryDate.month() == month;
       }).length;
 
       const monthYearly = {
         totalDays,
         workingDays,
-        totalSundays: getSundaysInMonth(year, month),
+        totalSundays: getSundaysInMonth(year, month + 1),
         presentCount,
-        month,
+        month: monthNames[month],
         year,
       };
 
@@ -1696,6 +1701,7 @@ app.get('/yearlyMonthAttendance/:loginID/:year', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch yearly attendance' });
   }
 });
+
 
 // Start the Express server
 app.listen(port, () => {
