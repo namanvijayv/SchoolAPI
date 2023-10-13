@@ -784,7 +784,7 @@ const teacherSchema = new mongoose.Schema({
       startDate: String, // Start date of the leave request
       endDate: String,   // End date of the leave request
       reason: String,  // Reason for leave
-      type:String
+      type:String,
       classTeacher : String,
       status: String,  // Status of the leave request (e.g., 'pending', 'approved', 'rejected')
     },
