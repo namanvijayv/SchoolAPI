@@ -785,6 +785,7 @@ const teacherSchema = new mongoose.Schema({
       endDate: String,   // End date of the leave request
       reason: String,  // Reason for leave
       status: String,  // Status of the leave request (e.g., 'pending', 'approved', 'rejected')
+      type:String
     },
   ],
 });
@@ -1393,6 +1394,7 @@ app.post('/submit-leave-request/:loginID', async (req, res) => {
       endDate,
       reason,
       status: 'pending',
+      type,
     };
 
     // Add the leave request to the teacher's leaveRequests array
