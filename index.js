@@ -1775,6 +1775,46 @@ app.get('/get-sections/:class', async (req, res) => {
   }
 });
 
+//Route to calculate the salary of the employee
+app.get('/calculate-teacher-monthly-salary/:loginID/:year/:month', async (req, res) => {
+  try {
+    const { loginID, year, month } = req.params;
+
+    // Find the teacher by loginID
+    const teacher = await Teacher.findOne({ loginID });
+
+    if (!teacher) {
+      return res.status(404).json({ message: 'Teacher not found' });
+    }
+
+    const targetMonth = parseInt(month);
+    const targetYear = parseInt(year);
+
+    // Calculate the total days in the specified month
+    const totalDays = new Date(targetYear, targetMonth, 0).getDate();
+
+    // Filter the teacher's attendance records for the specified month and year
+    const monthlyAttendance = teacher.present.filter((entry) => {
+      const entryDate = entry.date.split('-').map(Number);
+      return entryDate[0] === targetYear && entryDate[1] === targetMonth;
+    });
+
+    // Calculate the teacher's salary based on total working days and total present days
+    const totalWorkingDays = totalDays - getSundaysInMonth(targetYear, targetMonth);
+    const totalPresentDays = monthlyAttendance.length;
+
+    if (totalWorkingDays === 0) {
+      return res.status(400).json({ message: 'No working days in the specified month' });
+    }
+
+    const monthlySalary = ((teacher.salary / totalWorkingDays) * totalPresentDays).toFixed(0);
+
+    res.status(200).json({ monthlySalary });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to calculate monthly salary' });
+  }
+});
 
 // Start the Express server
 app.listen(port, () => {
