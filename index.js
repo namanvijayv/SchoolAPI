@@ -1842,7 +1842,7 @@ app.get('/teacher-salary-history/:loginID/:year/:month', async (req, res) => {
 
       const totalWorkingDays = totalDays - getSundaysInMonth(targetYear, m);
       const totalPresentDays = monthlyAttendance.length;
-      const monthlySalary = (teacher.salary / totalWorkingDays) * totalPresentDays;
+      const monthlySalary = ((teacher.salary / totalWorkingDays) * totalPresentDays).toFixed(0);
 
       // Get the month name
       const monthName = new Date(targetYear, m - 1, 1).toLocaleString('default', { month: 'long' });
