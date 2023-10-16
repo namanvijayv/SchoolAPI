@@ -1703,6 +1703,81 @@ app.get('/yearlyMonthAttendance/:loginID/:year', async (req, res) => {
 });
 
 
+const homeworkSchema = new mongoose.Schema({
+  title: String,
+  description: String,
+  dueDate: String,
+  class: Number,
+  section: String,
+  subject: String,
+});
+
+const Homework = mongoose.model('Homework', homeworkSchema);
+
+// Route for managing homework assignments
+app.route('/homework/:className/:section/:subject')
+  .post(async (req, res) => {
+    try {
+      const { className, section, subject } = req.params;
+      const { title, description, dueDate } = req.body;
+
+      // Create a new homework assignment
+      const homework = new Homework({
+        title,
+        description,
+        dueDate,
+        class: className,
+        section:section,
+        subject,
+      });
+
+      // Save the homework assignment to the database
+      await homework.save();
+
+      res.status(201).json({ message: 'Homework added successfully' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Failed to add homework' });
+    }
+  })
+  .get(async (req, res) => {
+    try {
+      const { className, subject } = req.params;
+
+      // Find homework assignments based on class and subject
+      const homeworkAssignments = await Homework.find({ class: className, subject });
+
+      if (homeworkAssignments.length === 0) {
+        return res.status(404).json({ message: 'No homework assignments found for this class and subject' });
+      }
+
+      res.status(200).json(homeworkAssignments);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Failed to fetch homework assignments' });
+    }
+  });
+
+// Route to get all sections of a specific class
+app.get('/get-sections/:class', async (req, res) => {
+  try {
+    const { class: className } = req.params; // Rename 'class' to 'className' to avoid conflicts
+
+    // Find all unique sections for the given class
+    const sections = await Student.distinct('section', { class: className });
+
+    if (sections.length === 0) {
+      return res.status(404).json({ message: 'No sections found for this class' });
+    }
+
+    res.status(200).json({ sections });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch sections' });
+  }
+});
+
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
