@@ -1816,6 +1816,51 @@ app.get('/calculate-teacher-monthly-salary/:loginID/:year/:month', async (req, r
   }
 });
 
+//Salary-history
+app.get('/teacher-salary-history/:loginID/:year/:month', async (req, res) => {
+  try {
+    const { loginID, year, month } = req.params;
+
+    // Find the teacher by loginID
+    const teacher = await Teacher.findOne({ loginID });
+
+    if (!teacher) {
+      return res.status(404).json({ message: 'Teacher not found' });
+    }
+
+    const targetMonth = parseInt(month);
+    const targetYear = parseInt(year);
+
+    const salaryHistory = [];
+
+    for (let m = 1; m <= targetMonth; m++) {
+      const totalDays = new Date(targetYear, m, 0).getDate();
+      const monthlyAttendance = teacher.present.filter((entry) => {
+        const entryDate = entry.date.split('-').map(Number);
+        return entryDate[0] === targetYear && entryDate[1] === m;
+      });
+
+      const totalWorkingDays = totalDays - getSundaysInMonth(targetYear, m);
+      const totalPresentDays = monthlyAttendance.length;
+      const monthlySalary = (teacher.salary / totalWorkingDays) * totalPresentDays;
+
+      // Get the month name
+      const monthName = new Date(targetYear, m - 1, 1).toLocaleString('default', { month: 'long' });
+
+      salaryHistory.push({
+        month: monthName,
+        year: targetYear,
+        salary: monthlySalary,
+      });
+    }
+
+    res.status(200).json(salaryHistory);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch salary history' });
+  }
+});
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
