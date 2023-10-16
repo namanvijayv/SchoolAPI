@@ -1706,7 +1706,6 @@ app.get('/yearlyMonthAttendance/:loginID/:year', async (req, res) => {
 const homeworkSchema = new mongoose.Schema({
   title: String,
   description: String,
-  dueDate: String,
   class: Number,
   section: String,
   subject: String,
@@ -1719,13 +1718,12 @@ app.route('/homework/:className/:section/:subject')
   .post(async (req, res) => {
     try {
       const { className, section, subject } = req.params;
-      const { title, description, dueDate } = req.body;
+      const { title, description } = req.body;
 
       // Create a new homework assignment
       const homework = new Homework({
         title,
         description,
-        dueDate,
         class: className,
         section:section,
         subject,
