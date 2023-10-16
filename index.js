@@ -1809,7 +1809,7 @@ app.get('/calculate-teacher-monthly-salary/:loginID/:year/:month', async (req, r
 
     const monthlySalary = ((teacher.salary / totalWorkingDays) * totalPresentDays).toFixed(0);
 
-    res.status(200).json({ monthlySalary });
+    res.status(200).json({ "thisMonthSalary":monthlySalary , "totalSalary" : teacher.salary});
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to calculate monthly salary' });
