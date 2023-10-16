@@ -1732,7 +1732,7 @@ app.route('/homework/:className/:section/:subject')
       // Save the homework assignment to the database
       await homework.save();
 
-      res.status(201).json({ message: 'Homework added successfully' });
+      res.status(200).json({ message: 'Homework added successfully' });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: 'Failed to add homework' });
