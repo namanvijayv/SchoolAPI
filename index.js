@@ -28,7 +28,6 @@ mongoose
   .catch((err) => console.error("MongoDB connection error:", err));
 
 // Define a MongoDB Schema for students
-
 const studentSchema = new mongoose.Schema({
   name: String,
   age: Number,
@@ -49,13 +48,21 @@ const studentSchema = new mongoose.Schema({
       time: String,   // Time of the event
       reason: String, // Reason for the event
     }],
-    announcement: [
+  announcement: [
     {
       date: String,   // Date of the event in "DD-MM-YYYY" format
       reason: String, // Reason for the event
     },
   ],
+  complaints: [
+    {
+      teacherName: String, // Name of the teacher who submitted the complaint
+      date: String,        // Date of the complaint in "DD-MM-YYYY" format
+      complaintText: String, // Text of the complaint
+    },
+  ],
 });
+
 
 // Pre-save hook to generate loginID and password
 studentSchema.pre("save", function (next) {
@@ -1889,6 +1896,37 @@ app.get('/get-students/:class/:section', async (req, res) => {
   }
 });
 
+app.post('/submit-student-complaint/:loginID', async (req, res) => {
+  try {
+    const { loginID } = req.params;
+    const { teacherName, date, complaintText } = req.body;
+
+    // Find the student based on their loginID
+    const student = await Student.findOne({ loginID });
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    // Create a new complaint
+    const complaint = {
+      teacherName,
+      date,
+      complaintText,
+    };
+
+    // Add the complaint to the student's complaints array
+    student.complaints.push(complaint);
+
+    // Save the updated student document
+    await student.save();
+
+    res.status(201).json({ message: 'Complaint submitted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to submit complaint' });
+  }
+});
 
 // Start the Express server
 app.listen(port, () => {
