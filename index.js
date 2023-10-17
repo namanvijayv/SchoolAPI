@@ -1878,6 +1878,8 @@ app.get('/teacher-salary-history/:loginID/:year/:month', async (req, res) => {
 
       salaryHistory.push({
         month: monthName,
+        montNumber : m,
+        year: targetYear,
         attendence: totalPresentDays,
         salary: monthlySalary,
         
