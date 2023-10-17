@@ -1862,6 +1862,34 @@ app.get('/teacher-salary-history/:loginID/:year/:month', async (req, res) => {
   }
 });
 
+
+app.get('/get-students/:class/:section', async (req, res) => {
+  try {
+    const className = parseInt(req.params.class);
+    const section = req.params.section;
+
+    // Find students in the specified class and section
+    const students = await Student.find({ class: className, section });
+
+    if (students.length === 0) {
+      return res.status(404).json({ message: 'No students found in this class and section' });
+    }
+
+    // Extract loginID and name of each student
+    const studentData = students.map(student => ({
+      loginID: student.loginID,
+      name: student.name,
+      class: `${className}-${section}`,
+    }));
+
+    res.status(200).json(studentData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch students' });
+  }
+});
+
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
