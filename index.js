@@ -61,6 +61,13 @@ const studentSchema = new mongoose.Schema({
       complaintText: String, // Text of the complaint
     },
   ],
+  feedback: [
+    {
+      teacherName: String, // Name of the teacher providing the feedback
+      date: String,        // Date of the feedback entry in "DD-MM-YYYY" format
+      text: String,        // Feedback text
+    }
+  ],
 });
 
 
@@ -1884,7 +1891,7 @@ app.get('/teacher-salary-history/:loginID/:year/:month', async (req, res) => {
   }
 });
 
-
+//Get Students by its class and section 
 app.get('/get-students/:class/:section', async (req, res) => {
   try {
     const className = parseInt(req.params.class);
@@ -1911,6 +1918,7 @@ app.get('/get-students/:class/:section', async (req, res) => {
   }
 });
 
+//Complaint by teacher for student 
 app.post('/submit-student-complaint/:loginID', async (req, res) => {
   try {
     const { loginID } = req.params;
@@ -1942,6 +1950,41 @@ app.post('/submit-student-complaint/:loginID', async (req, res) => {
     res.status(500).json({ error: 'Failed to submit complaint' });
   }
 });
+
+
+// Define a route for a teacher to add feedback to a student
+app.post('/add-student-feedback/:loginID', async (req, res) => {
+  try {
+    const { loginID } = req.params;
+    const { feedbackDate, feedbackText, teacherName } = req.body;
+
+    // Find the student based on their loginID
+    const student = await Student.findOne({ loginID });
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    // Create a new feedback entry
+    const feedbackEntry = {
+      teacherName,         // Name of the teacher providing the feedback
+      date: feedbackDate,  // Date of the feedback entry in "DD-MM-YYYY" format
+      text: feedbackText,  // Feedback text
+    };
+
+    // Add the feedback entry to the student's feedback array
+    student.feedback.push(feedbackEntry);
+
+    // Save the updated student document
+    await student.save();
+
+    res.status(201).json({ message: 'Feedback added successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to add feedback' });
+  }
+});
+
 
 // Start the Express server
 app.listen(port, () => {
