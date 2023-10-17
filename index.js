@@ -1816,12 +1816,27 @@ app.get('/calculate-teacher-monthly-salary/:loginID/:year/:month', async (req, r
 
     const monthlySalary = ((teacher.salary / totalWorkingDays) * totalPresentDays).toFixed(0);
 
-    res.status(200).json({ "thisMonthSalary":monthlySalary , "totalSalary" : teacher.salary, "totalDays" : totalWorkingDays, "totalPresentDays":totalPresentDays});
+    // Extract dates for which the teacher is present and absent in the specified month
+    const presentDates = monthlyAttendance.map((entry) => entry.date);
+    const absentDates = teacher.absent.filter((entry) => {
+      const entryDate = entry.toISOString().split('T')[0]; // Convert Date object to string in "YYYY-MM-DD" format
+      return entryDate.startsWith(`${year}-${month}`);
+    });
+
+    res.status(200).json({
+      "thisMonthSalary": monthlySalary,
+      "totalSalary": teacher.salary,
+      "totalDays": totalWorkingDays,
+      "totalPresentDays": totalPresentDays,
+      "presentDates": presentDates,
+      "absentDates": absentDates
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to calculate monthly salary' });
   }
 });
+
 
 //Salary-history
 app.get('/teacher-salary-history/:loginID/:year/:month', async (req, res) => {
