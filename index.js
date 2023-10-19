@@ -8,6 +8,7 @@ const { Chart } = require("chart.js");
 const moment = require("moment-timezone");
 const http = require("http");
 const socketIo = require("socket.io");
+const axios = require('axios') ;
 
 // Create an Express application
 const app = express();
@@ -1946,7 +1947,7 @@ app.post('/submit-student-complaint/:loginID', async (req, res) => {
     // Save the updated student document
     await student.save();
 
-    res.status(201).json({ message: 'Complaint submitted successfully' });
+    res.status(200).json({ message: 'Complaint submitted successfully' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to submit complaint' });
@@ -1980,10 +1981,78 @@ app.post('/add-student-feedback/:loginID', async (req, res) => {
     // Save the updated student document
     await student.save();
 
-    res.status(201).json({ message: 'Feedback added successfully' });
+    res.status(200).json({ message: 'Feedback added successfully' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to add feedback' });
+  }
+});
+
+
+// Create a new Mongoose model for exams
+const examSchema = new mongoose.Schema({
+  class: Number,        // Class for which the exam is conducted
+  section: String,     // Section of the class
+  subject: String,     // Subject name for the exam
+  examType: String,    // Type of the exam (e.g., 'Mid-term', 'Final')
+  examSubType: String, // Subtype of the exam (e.g., 'Unit Test 1', 'Unit Test 2')
+  maxMarks: Number,    // Maximum marks for the exam
+});
+
+const Exam = mongoose.model('Exam', examSchema);
+
+// Route for a teacher to create a new exam
+app.post('/create-exam', async (req, res) => {
+  try {
+    const { class: section, subject, examType, examSubType, maxMarks } = req.body;
+
+    // Create a new exam document
+    const exam = new Exam({
+      class:
+      section,
+      subject,
+      examType,
+      examSubType,
+      maxMarks,
+    });
+
+    // Save the new exam document
+    await exam.save();
+
+    res.status(200).json({ message: 'Exam created successfully' , ID:exam._id});
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to create the exam' });
+  }
+});
+
+app.post('/upload-exam-marks/:examID/:cl/:section', async (req, res) => {
+  try {
+    const { examID, cl, section } = req.params;
+    const marks = req.body; // Marks data
+
+    // Fetch the list of students based on class and section
+    const response = await axios.get(`https://schoolapi-3yo0.onrender.com/get-students/${cl}/${section}`);
+    const students = response.data;
+
+    // Check if the length of the students matches the number of marks
+    if (students.length !== marks.length) {
+      return res.status(400).json({ error: 'Number of students and marks do not match' });
+    }
+
+    // Associate each mark with a student loginID and the examID
+    const examMarks = students.map((student, index) => ({
+      loginID: student.loginID,
+      mark: marks[index],
+      examID, // Include the examID
+    }));
+
+    // Here, you can save the exam marks to your database with the associated examID
+
+    res.status(200).json({ message: 'Exam marks uploaded successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to upload exam marks' });
   }
 });
 
