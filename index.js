@@ -812,6 +812,8 @@ const teacherSchema = new mongoose.Schema({
   ],
   lessonPlans: [
     {
+      class : Number,
+      section : String,
       date: String,       // Date of the lesson
       subject: String,  // Subject for the lesson
       content: String,  // Lesson content or description
@@ -2082,7 +2084,7 @@ app.post('/upload-exam-marks/:examID/:cl/:section', async (req, res) => {
 app.post('/add-lesson-plan/:loginID', async (req, res) => {
   try {
     const { loginID } = req.params;
-    const { date, subject, content } = req.body;
+    const { class, section, date, subject, content } = req.body;
 
     // Find the teacher by loginID
     const teacher = await Teacher.findOne({ loginID });
