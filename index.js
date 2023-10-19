@@ -810,6 +810,13 @@ const teacherSchema = new mongoose.Schema({
       status: String,  // Status of the leave request (e.g., 'pending', 'approved', 'rejected')
     },
   ],
+  lessonPlans: [
+    {
+      date: Date,       // Date of the lesson
+      subject: String,  // Subject for the lesson
+      content: String,  // Lesson content or description
+    },
+  ],
 });
 
 // Define a method to calculate and set the total work hours
@@ -2070,6 +2077,40 @@ app.post('/upload-exam-marks/:examID/:cl/:section', async (req, res) => {
     res.status(500).json({ error: 'Failed to upload exam marks' });
   }
 });
+
+
+app.post('/add-lesson-plan/:loginID', async (req, res) => {
+  try {
+    const { loginID } = req.params;
+    const { date, subject, content } = req.body;
+
+    // Find the teacher by loginID
+    const teacher = await Teacher.findOne({ loginID });
+
+    if (!teacher) {
+      return res.status(404).json({ error: 'Teacher not found' });
+    }
+
+    // Create a new lesson plan object
+    const lessonPlan = {
+      date: new Date(date),
+      subject,
+      content,
+    };
+
+    // Add the lesson plan to the teacher's lessonPlans array
+    teacher.lessonPlans.push(lessonPlan);
+
+    // Save the updated teacher document
+    await teacher.save();
+
+    res.status(201).json({ message: 'Lesson plan added successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to add lesson plan' });
+  }
+});
+
 
 
 // Start the Express server
