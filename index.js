@@ -69,6 +69,12 @@ const studentSchema = new mongoose.Schema({
       text: String,        // Feedback text
     }
   ],
+  examMarks: [
+    {
+      examID: String, // Identifier for the exam
+      mark: Number,   // Marks obtained by the student
+    },
+  ],
 });
 
 
@@ -2026,6 +2032,7 @@ app.post('/create-exam', async (req, res) => {
   }
 });
 
+
 app.post('/upload-exam-marks/:examID/:cl/:section', async (req, res) => {
   try {
     const { examID, cl, section } = req.params;
@@ -2040,16 +2047,24 @@ app.post('/upload-exam-marks/:examID/:cl/:section', async (req, res) => {
       return res.status(400).json({ error: 'Number of students and marks do not match' });
     }
 
-    // Associate each mark with a student loginID and the examID
-    const examMarks = students.map((student, index) => ({
-      loginID: student.loginID,
-      mark: marks[index],
-      examID, // Include the examID
-    }));
+    // Iterate through the students and update their exam marks
+    for (let i = 0; i < students.length; i++) {
+      const student = students[i];
+      const mark = marks[i];
 
-    // Here, you can save the exam marks to your database with the associated examID
+      // Find the student in your database by loginID
+      const studentInDB = await Student.findOne({ loginID: student.loginID });
 
-    res.status(200).json({ message: 'Exam marks uploaded successfully' });
+      if (!studentInDB) {
+        return res.status(404).json({ error: 'Student not found' });
+      }
+
+      // Update the student's exam marks in the database
+      studentInDB.examMarks.push({ examID, mark });
+      await studentInDB.save();
+    }
+
+    res.status(201).json({ message: 'Exam marks uploaded successfully' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to upload exam marks' });
