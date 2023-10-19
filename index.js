@@ -812,7 +812,7 @@ const teacherSchema = new mongoose.Schema({
   ],
   lessonPlans: [
     {
-      date: Date,       // Date of the lesson
+      date: String,       // Date of the lesson
       subject: String,  // Subject for the lesson
       content: String,  // Lesson content or description
     },
