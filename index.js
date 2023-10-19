@@ -2064,7 +2064,7 @@ app.post('/upload-exam-marks/:examID/:cl/:section', async (req, res) => {
       await studentInDB.save();
     }
 
-    res.status(201).json({ message: 'Exam marks uploaded successfully' });
+    res.status(200).json({ message: 'Exam marks uploaded successfully' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to upload exam marks' });
