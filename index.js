@@ -2043,7 +2043,7 @@ app.post('/create-exam', async (req, res) => {
 app.post('/upload-exam-marks/:examID/:cl/:section', async (req, res) => {
   try {
     const { examID, cl, section } = req.params;
-    const marks = req.body; // Marks data
+    const {marks} = req.body; // Marks data
 
     // Fetch the list of students based on class and section
     const response = await axios.get(`https://schoolapi-3yo0.onrender.com/get-students/${cl}/${section}`);
