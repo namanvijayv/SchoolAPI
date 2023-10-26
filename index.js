@@ -2304,6 +2304,28 @@ app.get('/student-complaints/:loginID', async (req, res) => {
   }
 });
 
+// Route to get all complaints for a student by loginID
+app.get('/student-feedback/:loginID', async (req, res) => {
+  try {
+    const { loginID } = req.params;
+
+    // Find the student by loginID
+    const student = await Student.findOne({ loginID });
+
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+
+    // Get the student's complaints
+    const feedback = student.feedback;
+
+    res.status(200).json(feedback);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch student complaints' });
+  }
+});
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
