@@ -2448,6 +2448,56 @@ app.get('/student-feedback/:loginID', async (req, res) => {
   }
 });
 
+// Route to get student performance by loginID
+app.get('/student-performance/:loginID', async (req, res) => {
+  try {
+    const { loginID } = req.params;
+
+    // Find the student by loginID
+    const student = await Student.findOne({ loginID });
+
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+
+    // Fetch the student's exam marks
+    const examMarks = student.examMarks;
+
+    // Prepare the response array
+    const performance = [];
+
+    // Iterate through the examMarks and retrieve exam details
+    for (const examMark of examMarks) {
+      const examID = examMark.examID;
+      const mark = examMark.mark;
+
+      // Find the exam by examID
+      const exam = await Exam.findById(examID);
+
+      if (exam) {
+        const examInfo = {
+          examType: exam.examType,
+          subject: exam.subject,
+          examSubType: exam.examSubType,
+          maxMarks: exam.maxMarks,
+          mark,
+        };
+        performance.push(examInfo);
+      }
+    }
+
+    // Prepare the response
+    const response = {
+      performance,
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch student performance' });
+  }
+});
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
