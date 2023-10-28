@@ -2177,7 +2177,7 @@ app.get('/student-monthly-attendance/:loginID/:year/:month', async (req, res) =>
 
 
 // Route to get a student's monthly attendance for the present month and year
-app.get('/student-monthly-attendance/:loginID', async (req, res) => {
+app.get("/student-monthly-attendance/:loginID", async (req, res) => {
   try {
     const { loginID } = req.params;
 
@@ -2185,7 +2185,7 @@ app.get('/student-monthly-attendance/:loginID', async (req, res) => {
     const student = await Student.findOne({ loginID });
 
     if (!student) {
-      return res.status(404).json({ message: 'Student not found' });
+      return res.status(404).json({ message: "Student not found" });
     }
 
     // Get the current date to determine the present month and year
@@ -2198,7 +2198,26 @@ app.get('/student-monthly-attendance/:loginID', async (req, res) => {
 
     // Filter and count the student's attendance records for the present month and year
     const monthlyAttendance = student.presentDates.filter((date) => {
-      const dateParts = date.split('-');
+      const dateParts = date.split("-");
+      if (dateParts.length === 3) {
+        // Date is in "YYYY-MM-DD" format
+        const [yr, mon, day] = dateParts.map(Number);
+        return yr === targetYear && mon === targetMonth && day <= totalDays;
+      } else {
+        // Attempt to parse the date in various formats
+        const parsedDate = new Date(date);
+        if (!isNaN(parsedDate.getTime())) {
+          const mon = parsedDate.getMonth() + 1; // Months are zero-based
+          const day = parsedDate.getDate();
+          return mon === targetMonth && day <= totalDays;
+        }
+      }
+      return false;
+    });
+
+    // Filter and count the student's attendance records for the present month and year
+    const monthlyabsent = student.absentDates.filter((date) => {
+      const dateParts = date.split("-");
       if (dateParts.length === 3) {
         // Date is in "YYYY-MM-DD" format
         const [yr, mon, day] = dateParts.map(Number);
@@ -2216,25 +2235,42 @@ app.get('/student-monthly-attendance/:loginID', async (req, res) => {
     });
 
     // Calculate the working days (excluding Sundays)
-    const totalWorkingDays = totalDays;
+    const totalWorkingDays =
+      totalDays -
+      monthlyAttendance.filter((date) => {
+        const parsedDate = new Date(date);
+        return parsedDate.getDay() === 0; // Sunday (0)
+      }).length;
 
     // Calculate the present days for the month
     const presentCount = monthlyAttendance.length;
+    const absentCount = monthlyabsent.length;
+
+    // Calculate the total Sundays in the month
+    const totalSundays = new Array(totalDays)
+      .fill(0)
+      .map((_, day) => new Date(targetYear, targetMonth - 1, day + 1))
+      .filter((date) => date.getDay() === 0).length; // Filter for Sundays
 
     // Response data
     const monthlyAttendanceData = {
       year: targetYear,
       month: targetMonth,
       totalDays: totalDays,
-      workingDays: totalWorkingDays,
-      totalSundays: 0,
+      workingDays: totalDays - totalSundays, // Total working days (excluding Sundays)
+      totalSundays: totalSundays,
       presentCount: presentCount,
+      absentCount: absentCount,
+      presentDates: monthlyAttendance, // List of present dates
+      absentDates: student.absentDates, // List of absent dates from the student schema
     };
 
     res.status(200).json(monthlyAttendanceData);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch student monthly attendance' });
+    res
+      .status(500)
+      .json({ error: "Failed to fetch student monthly attendance" });
   }
 });
 
