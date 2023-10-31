@@ -1988,6 +1988,7 @@ app.post('/add-student-feedback/:loginID', async (req, res) => {
 
     // Create a new feedback entry
     const feedbackEntry = {
+      title,
       teacherName,         // Name of the teacher providing the feedback
       date: feedbackDate,  // Date of the feedback entry in "DD-MM-YYYY" format
       text: feedbackText,  // Feedback text
