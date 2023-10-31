@@ -1745,8 +1745,7 @@ const homeworkSchema = new mongoose.Schema({
 const Homework = mongoose.model('Homework', homeworkSchema);
 
 // Route for managing homework assignments
-app.route('/homework/:className/:section/:subject/:date')
-  .post(async (req, res) => {
+app.post('/homework/:className/:section/:subject/:date', async (req, res) => {
     try {
       const { className, section, subject, date } = req.params;
       const { title, description } = req.body;
@@ -1769,8 +1768,8 @@ app.route('/homework/:className/:section/:subject/:date')
       console.error(error);
       res.status(500).json({ error: 'Failed to add homework' });
     }
-  })
-  .get(async (req, res) => {
+  }) ;
+  app.get('/homework/:className/:section/:date', async (req, res) => {
     try {
       const { className, section, date } = req.params;
 
