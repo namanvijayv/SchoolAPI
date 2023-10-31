@@ -1772,10 +1772,10 @@ app.route('/homework/:className/:section/:subject')
   })
   .get(async (req, res) => {
     try {
-      const { className, subject } = req.params;
+      const { className, section, subject, date } = req.params;
 
       // Find homework assignments based on class and subject
-      const homeworkAssignments = await Homework.find({ class: className, subject });
+      const homeworkAssignments = await Homework.find({ class: className, section, subject, date });
 
       if (homeworkAssignments.length === 0) {
         return res.status(404).json({ message: 'No homework assignments found for this class and subject' });
