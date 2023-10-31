@@ -2554,7 +2554,9 @@ app.get("/subjects/:className/:section/:date", async (req, res) => {
       });
     }
 
-    res.status(200).json(subjects.subject);
+    const subjectList = subjects.map(subject => subject.subject);
+
+    res.status(200).json(subjectList);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to fetch homework assignments" });
