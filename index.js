@@ -83,13 +83,16 @@ const studentSchema = new mongoose.Schema({
 // Pre-save hook to generate loginID and password
 studentSchema.pre("save", function (next) {
   const student = this;
-  const randomWord = Math.random().toString(36).substring(2, 5).toUpperCase(); // Random 3-character word (in uppercase)
-  const randomNumbers = Math.random().toString().substring(2, 6); // Random 4-digit number
 
-  // Construct loginID and password based on the provided criteria
-  student.loginID = randomWord + randomNumbers;
-  student.password =
-    student.name.substring(0, 3) + student.appRegNumber.substring(0, 4);
+  // Check if loginID is already set (meaning it's an existing student)
+  if (!student.loginID) {
+    const randomWord = Math.random().toString(36).substring(2, 5).toUpperCase();
+    const randomNumbers = Math.random().toString().substring(2, 6);
+
+    // Construct loginID and password based on the provided criteria
+    student.loginID = randomWord + randomNumbers;
+    student.password = student.name.substring(0, 3) + student.appRegNumber.substring(0, 4);
+  }
 
   next();
 });
