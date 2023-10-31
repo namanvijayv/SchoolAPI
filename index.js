@@ -2536,6 +2536,31 @@ app.get('/student-performance/:loginID', async (req, res) => {
   }
 });
 
+//Subjects Route
+app.get("/subjects/:className/:section/:date", async (req, res) => {
+  try {
+    const { className, section, date } = req.params;
+
+    // Find homework assignments based on class and subject
+    const subjects = await Homework.find({
+      class: className,
+      section,
+      date
+    });
+
+    if (subjects.length === 0) {
+      return res.status(404).json({
+        message: "No homework on this day",
+      });
+    }
+
+    res.status(200).json(subjects.subject);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch homework assignments" });
+  }
+})
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
