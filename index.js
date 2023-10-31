@@ -57,6 +57,7 @@ const studentSchema = new mongoose.Schema({
   ],
   complaints: [
     {
+      title : String,
       teacherName: String, // Name of the teacher who submitted the complaint
       date: String,        // Date of the complaint in "DD-MM-YYYY" format
       complaintText: String, // Text of the complaint
@@ -64,6 +65,7 @@ const studentSchema = new mongoose.Schema({
   ],
   feedback: [
     {
+      title : String,
       teacherName: String, // Name of the teacher providing the feedback
       date: String,        // Date of the feedback entry in "DD-MM-YYYY" format
       text: String,        // Feedback text
@@ -1941,7 +1943,7 @@ app.get('/get-students/:class/:section', async (req, res) => {
 app.post('/submit-student-complaint/:loginID', async (req, res) => {
   try {
     const { loginID } = req.params;
-    const { teacherName, date, complaintText } = req.body;
+    const { title, teacherName, date, complaintText } = req.body;
 
     // Find the student based on their loginID
     const student = await Student.findOne({ loginID });
@@ -1975,7 +1977,7 @@ app.post('/submit-student-complaint/:loginID', async (req, res) => {
 app.post('/add-student-feedback/:loginID', async (req, res) => {
   try {
     const { loginID } = req.params;
-    const { feedbackDate, feedbackText, teacherName } = req.body;
+    const {title, feedbackDate, feedbackText, teacherName } = req.body;
 
     // Find the student based on their loginID
     const student = await Student.findOne({ loginID });
