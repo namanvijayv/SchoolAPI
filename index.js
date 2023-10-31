@@ -1957,6 +1957,7 @@ app.post('/submit-student-complaint/:loginID', async (req, res) => {
 
     // Create a new complaint
     const complaint = {
+      title,
       teacherName,
       date,
       complaintText,
