@@ -1745,11 +1745,11 @@ const homeworkSchema = new mongoose.Schema({
 const Homework = mongoose.model('Homework', homeworkSchema);
 
 // Route for managing homework assignments
-app.route('/homework/:className/:section/:subject')
+app.route('/homework/:className/:section/:subject/:date')
   .post(async (req, res) => {
     try {
-      const { className, section, subject } = req.params;
-      const { title, description, date } = req.body;
+      const { className, section, subject, date } = req.params;
+      const { title, description } = req.body;
 
       // Create a new homework assignment
       const homework = new Homework({
