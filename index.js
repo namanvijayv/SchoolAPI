@@ -77,6 +77,15 @@ const studentSchema = new mongoose.Schema({
       mark: Number,   // Marks obtained by the student
     },
   ],
+  totalFees: Number, // Total fees for the student
+  feesDistributions: [
+    {
+      quarter: String, // E.g., 'Q1', 'Q2', 'Q3', 'Q4'
+      totalQuarterlyFees: Number, // Total fees for the quarter
+      feesPaid: Number, // Fees paid for the quarter
+      modeOfPayment: String, // Payment mode for the quarter
+    },
+  ],
 });
 
 
@@ -2621,6 +2630,153 @@ app.get('/get-timetable/:cla/:sec', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch timetable' });
+  }
+});
+
+// ============================= Time Table Ends ================================
+
+// Add Total Fees for a Student
+app.post('/add-total-fees/:loginID', async (req, res) => {
+  try {
+    const { loginID } = req.params;
+    const { totalFees } = req.body;
+
+    // Find the student by loginID
+    const student = await Student.findOne({ loginID });
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    // Calculate the quarterly fees
+    const quarterlyFee = totalFees / 3;
+
+    // Initialize feesDistributions with quarterly data
+    student.feesDistributions = [
+      { quarter: 'Apr-Jul', totalQuarterlyFees: quarterlyFee, feesPaid: 0, modeOfPayment: '' },
+      { quarter: 'Aug-Nov', totalQuarterlyFees: quarterlyFee, feesPaid: 0, modeOfPayment: '' },
+      { quarter: 'Dec-Mar', totalQuarterlyFees: quarterlyFee, feesPaid: 0, modeOfPayment: '' },
+      // { quarter: 'Q4', totalQuarterlyFees: quarterlyFee, feesPaid: 0, modeOfPayment: '' },
+    ];
+
+    // Set the total fees
+    student.totalFees = totalFees;
+
+    // Save the updated student document
+    await student.save();
+
+    res.status(200).json({ message: 'Total fees added successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to add total fees' });
+  }
+});
+
+// Pay Fees for a Specific Quarter
+app.post('/pay-fees/:loginID', async (req, res) => {
+  try {
+    const { loginID } = req.params;
+    const { quarter, amountPaid, modeOfPayment } = req.body;
+
+    // Find the student by loginID
+    const student = await Student.findOne({ loginID });
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    // Find the corresponding quarter in feesDistributions
+    const quarterIndex = student.feesDistributions.findIndex(
+      (qtr) => qtr.quarter === quarter
+    );
+
+    if (quarterIndex === -1) {
+      return res.status(404).json({ error: 'Quarter not found' });
+    }
+
+    // Update feesPaid and modeOfPayment for the selected quarter
+    student.feesDistributions[quarterIndex].feesPaid = amountPaid;
+    student.feesDistributions[quarterIndex].modeOfPayment = modeOfPayment;
+
+    // Update total fees balance
+    const totalFeesPaid = student.feesDistributions.reduce(
+      (sum, qtr) => sum + qtr.feesPaid,
+      0
+    );
+
+    student.totalFees = student.totalFees - totalFeesPaid;
+
+    // Save the updated student document
+    await student.save();
+
+    res.status(200).json({ message: 'Fees payment successful' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to pay fees' });
+  }
+});
+
+// View Total Fees for a Student
+app.get('/view-total-fees/:loginID', async (req, res) => {
+  try {
+    const { loginID } = req.params;
+
+    // Find the student by loginID
+    const student = await Student.findOne({ loginID });
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    res.status(200).json({ totalFees: student.totalFees });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch total fees' });
+  }
+});
+
+// View Quarterwise Fees Distribution
+app.get('/view-quarterwise-fees/:loginID', async (req, res) => {
+  try {
+    const { loginID } = req.params;
+
+    // Find the student by loginID
+    const student = await Student.findOne({ loginID });
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    res.status(200).json({ feesDistributions: student.feesDistributions });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch quarterwise fees' });
+  }
+});
+
+// View Payment History for a Student
+app.get('/view-payment-history/:loginID', async (req, res) => {
+  try {
+    const { loginID } = req.params;
+
+    // Find the student by loginID
+    const student = await Student.findOne({ loginID });
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    // Extract payment history from feesDistributions
+    const paymentHistory = student.feesDistributions.map((qtr) => ({
+      quarter: qtr.quarter,
+      feesPaid: qtr.feesPaid,
+      modeOfPayment: qtr.modeOfPayment,
+    }));
+
+    res.status(200).json({ paymentHistory });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch payment history' });
   }
 });
 
