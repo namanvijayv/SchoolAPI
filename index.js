@@ -2569,6 +2569,62 @@ app.get("/subjects/:className/:section/:date", async (req, res) => {
   }
 })
 
+// Define your timetable schema
+const timetableSchema = new mongoose.Schema({
+  class: Number,
+  section: String,
+  timetable: {
+    monday: {},
+    tuesday: {},
+    wednesday: {},
+    thursday: {},
+    friday: {},
+    saturday: {},
+  },
+});
+
+const Timetable = mongoose.model('Timetable', timetableSchema);
+
+// Create a new timetable
+app.post('/create-timetable/:cla/:sec', async (req, res) => {
+  try {
+    const { cla, sec} = req.params;
+    const { timetable } = req.body;
+
+    const newTimetable = new Timetable({
+      class: cla,
+      section : sec,
+      timetable,
+    });
+
+    await newTimetable.save();
+
+    res.status(201).json({ message: 'Timetable created successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to create timetable' });
+  }
+});
+
+// Retrieve a timetable by class and section
+app.get('/get-timetable/:cla/:sec', async (req, res) => {
+  try {
+    const { cla, sec } = req.params;
+
+    const timetable = await Timetable.findOne({ class:cla , section:sec });
+
+    if (!timetable) {
+      return res.status(404).json({ message: 'Timetable not found' });
+    }
+
+    res.status(200).json(timetable);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch timetable' });
+  }
+});
+
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
