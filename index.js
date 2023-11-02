@@ -2943,6 +2943,46 @@ app.get('/all-student-announcements', async (req, res) => {
 });
 // =======================================================================
 
+app.get('/upcoming-birthday/:cls', async (req, res) => {
+  try {
+    // Calculate today's date and extract day and month
+    const today = new Date();
+    const todayDay = today.getDate();
+    const todayMonth = today.getMonth() + 1; // Adding 1 because months are zero-based
+
+    const { cls } = req.params;
+
+    // Find students in the specified class and section whose DOB matches today's date
+    const studentsWithBirthdayToday = await Student.find({
+      'class': cls,
+    });
+    // console.log(studentsWithBirthdayToday) ;
+
+    // Filter students whose birthday matches today
+    const studentsToday = studentsWithBirthdayToday.filter((student) => {
+      if (student.DOB) {
+        const dob = student.DOB.split('-');
+        if (dob.length === 3) {
+          const dobDay = parseInt(dob[0], 10);
+          const dobMonth = parseInt(dob[1], 10);
+          return dobMonth === todayMonth;
+        }
+      }
+      return false;
+    });
+
+    const studentNames = studentsToday.map((student) => student.name);
+    const studentClass = studentsToday.map((student) => student.class);
+    const studentSection = studentsToday.map((student) => student.section);
+    const studentID = studentsToday.map((student) => student.loginID);
+
+    res.status(200).json({ students: studentNames, class : studentClass, section : studentSection, loginID : studentID });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch students with birthdays today' });
+  }
+});
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
