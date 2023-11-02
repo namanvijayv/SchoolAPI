@@ -8,7 +8,7 @@ const { Chart } = require("chart.js");
 const moment = require("moment-timezone");
 const http = require("http");
 const socketIo = require("socket.io");
-const axios = require('axios') ;
+const axios = require("axios");
 
 // Create an Express application
 const app = express();
@@ -229,7 +229,7 @@ app.post("/login", async (req, res) => {
     // Authentication successful
     res
       .status(200)
-      .json({ message: "Login successful", loginID : student.loginID, class : student.class, section : student.section });
+      .json({ message: "Login successful", loginID: student.loginID });
   } catch (error) {
     res.status(500).json({ error: "Login failed. Internal server error." });
   }
@@ -787,7 +787,6 @@ app.put("/edit-student/:loginID", async (req, res) => {
   }
 });
 
-
 //===================Teachers Start=========================
 const teacherSchema = new mongoose.Schema({
   name: String,
@@ -818,20 +817,20 @@ const teacherSchema = new mongoose.Schema({
   leaveRequests: [
     {
       startDate: String, // Start date of the leave request
-      endDate: String,   // End date of the leave request
-      reason: String,  // Reason for leave
-      ty:String,
-      classTeacher : String,
-      status: String,  // Status of the leave request (e.g., 'pending', 'approved', 'rejected')
+      endDate: String, // End date of the leave request
+      reason: String, // Reason for leave
+      ty: String,
+      classTeacher: String,
+      status: String, // Status of the leave request (e.g., 'pending', 'approved', 'rejected')
     },
   ],
   lessonPlans: [
     {
-      cls : Number,
-      section : String,
-      date: String,       // Date of the lesson
-      subject: String,  // Subject for the lesson
-      content: String,  // Lesson content or description
+      cls: Number,
+      section: String,
+      date: String, // Date of the lesson
+      subject: String, // Subject for the lesson
+      content: String, // Lesson content or description
     },
   ],
 });
@@ -1291,7 +1290,7 @@ app.get("/teacher-status-chart/:loginID", async (req, res) => {
   }
 });
 
-app.post('/teacher-login', async (req, res) => {
+app.post("/teacher-login", async (req, res) => {
   try {
     const { loginID, password } = req.body;
 
@@ -1303,19 +1302,19 @@ app.post('/teacher-login', async (req, res) => {
       // You can use authentication libraries like JWT to create a token
 
       // Respond with a success message or token
-      res.status(200).json({ message: 'Teacher logged in successfully' });
+      res.status(200).json({ message: "Teacher logged in successfully" });
     } else {
       // Teacher not found or invalid credentials
-      res.status(401).json({ error: 'Invalid login credentials' });
+      res.status(401).json({ error: "Invalid login credentials" });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Login failed' });
+    res.status(500).json({ error: "Login failed" });
   }
 });
 
 //--------Get Student of a class---------
-app.get('/get-students/:class', async (req, res) => {
+app.get("/get-students/:class", async (req, res) => {
   try {
     const classInfo = req.params.class; // Assuming the parameter is formatted as "class-section"
 
@@ -1323,42 +1322,47 @@ app.get('/get-students/:class', async (req, res) => {
     const students = await Student.find({ class: classInfo });
 
     if (students.length === 0) {
-      return res.status(404).json({ message: 'No students found in this class' });
+      return res
+        .status(404)
+        .json({ message: "No students found in this class" });
     }
 
     // Extract loginID, name, and classInfo of each student
-    const studentData = students.map(student => ({
+    const studentData = students.map((student) => ({
       loginID: student.loginID,
       name: student.name,
-      classInfo: student.class+"-"+student.section
+      classInfo: student.class + "-" + student.section,
     }));
 
     res.status(200).json(studentData);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch students' });
+    res.status(500).json({ error: "Failed to fetch students" });
   }
 });
 
-
 //--------Present and Absent-----------
 // Route to mark a student as present with the current date in "DD-MM-YYYY" format
-app.get('/mark-present/:loginID', async (req, res) => {
+app.get("/mark-present/:loginID", async (req, res) => {
   try {
     const { loginID } = req.params;
 
     // Get the current date in "DD-MM-YYYY" format
-    const currentDate = new Date().toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    }).split('/').reverse().join('-');
+    const currentDate = new Date()
+      .toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })
+      .split("/")
+      .reverse()
+      .join("-");
 
     // Find the student by loginID
     const student = await Student.findOne({ loginID });
 
     if (!student) {
-      return res.status(404).json({ error: 'Student not found' });
+      return res.status(404).json({ error: "Student not found" });
     }
 
     // Add the current date to the presentDates array
@@ -1373,30 +1377,34 @@ app.get('/mark-present/:loginID', async (req, res) => {
     // Save the updated student data
     await student.save();
 
-    res.status(200).json({ message: 'Student marked as present', student });
+    res.status(200).json({ message: "Student marked as present", student });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to mark student as present' });
+    res.status(500).json({ error: "Failed to mark student as present" });
   }
 });
 
 // Route to mark a student as absent with the current date in "DD-MM-YYYY" format
-app.get('/mark-student-absent/:loginID', async (req, res) => {
+app.get("/mark-student-absent/:loginID", async (req, res) => {
   try {
     const { loginID } = req.params;
 
     // Get the current date in "DD-MM-YYYY" format
-    const currentDate = new Date().toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    }).split('/').reverse().join('-');
+    const currentDate = new Date()
+      .toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })
+      .split("/")
+      .reverse()
+      .join("-");
 
     // Find the student by loginID
     const student = await Student.findOne({ loginID });
 
     if (!student) {
-      return res.status(404).json({ error: 'Student not found' });
+      return res.status(404).json({ error: "Student not found" });
     }
 
     // Add the current date to the absentDates array
@@ -1411,18 +1419,16 @@ app.get('/mark-student-absent/:loginID', async (req, res) => {
     // Save the updated student data
     await student.save();
 
-    res.status(200).json({ message: 'Student marked as absent', student });
+    res.status(200).json({ message: "Student marked as absent", student });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to mark student as absent' });
+    res.status(500).json({ error: "Failed to mark student as absent" });
   }
 });
 
-
-
 // LEAVE Request
 // POST route to submit a leave request
-app.post('/submit-leave-request/:loginID', async (req, res) => {
+app.post("/submit-leave-request/:loginID", async (req, res) => {
   try {
     const { loginID } = req.params;
     const { startDate, endDate, reason, ty, classTeacher } = req.body;
@@ -1431,7 +1437,7 @@ app.post('/submit-leave-request/:loginID', async (req, res) => {
     const teacher = await Teacher.findOne({ loginID });
 
     if (!teacher) {
-      return res.status(404).json({ error: 'Teacher not found' });
+      return res.status(404).json({ error: "Teacher not found" });
     }
 
     // Create a new leave request
@@ -1441,7 +1447,7 @@ app.post('/submit-leave-request/:loginID', async (req, res) => {
       reason,
       ty,
       classTeacher,
-      status: 'pending',
+      status: "pending",
     };
 
     // Add the leave request to the teacher's leaveRequests array
@@ -1450,15 +1456,15 @@ app.post('/submit-leave-request/:loginID', async (req, res) => {
     // Save the updated teacher document
     await teacher.save();
 
-    res.status(200).json({ message: 'Leave request submitted successfully' });
+    res.status(200).json({ message: "Leave request submitted successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to submit leave request' });
+    res.status(500).json({ error: "Failed to submit leave request" });
   }
 });
 
 // GET route to retrieve leave requests for a teacher
-app.get('/leave-requests/:loginID', async (req, res) => {
+app.get("/leave-requests/:loginID", async (req, res) => {
   try {
     const { loginID } = req.params;
 
@@ -1466,7 +1472,7 @@ app.get('/leave-requests/:loginID', async (req, res) => {
     const teacher = await Teacher.findOne({ loginID });
 
     if (!teacher) {
-      return res.status(404).json({ error: 'Teacher not found' });
+      return res.status(404).json({ error: "Teacher not found" });
     }
 
     // Get the leave requests for the teacher
@@ -1475,12 +1481,12 @@ app.get('/leave-requests/:loginID', async (req, res) => {
     res.status(200).json(leaveRequests);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch leave requests' });
+    res.status(500).json({ error: "Failed to fetch leave requests" });
   }
 });
 
 // PUT route to update the status of a leave request
-app.put('/leave-request/:loginID/:requestID', async (req, res) => {
+app.put("/leave-request/:loginID/:requestID", async (req, res) => {
   try {
     const { loginID, requestID } = req.params;
     const { status } = req.body;
@@ -1489,14 +1495,14 @@ app.put('/leave-request/:loginID/:requestID', async (req, res) => {
     const teacher = await Teacher.findOne({ loginID });
 
     if (!teacher) {
-      return res.status(404).json({ error: 'Teacher not found' });
+      return res.status(404).json({ error: "Teacher not found" });
     }
 
     // Find the leave request by its ID
     const leaveRequest = teacher.leaveRequests.id(requestID);
 
     if (!leaveRequest) {
-      return res.status(404).json({ error: 'Leave request not found' });
+      return res.status(404).json({ error: "Leave request not found" });
     }
 
     // Update the status of the leave request
@@ -1505,24 +1511,25 @@ app.put('/leave-request/:loginID/:requestID', async (req, res) => {
     // Save the updated teacher document
     await teacher.save();
 
-    res.status(200).json({ message: 'Leave request status updated successfully' });
+    res
+      .status(200)
+      .json({ message: "Leave request status updated successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to update leave request status' });
+    res.status(500).json({ error: "Failed to update leave request status" });
   }
 });
 
-
 //Notifications By teacher and visible to students
-app.post('/create-notification/:class/:section', async (req, res) => {
+app.post("/create-notification/:class/:section", async (req, res) => {
   try {
     const { class: section } = req.params;
     const { date, time, reason } = req.body;
 
     // Construct the event data
     const eventData = {
-      date: date,   // Format the date as needed
-      time: time,   // Format the time as needed
+      date: date, // Format the date as needed
+      time: time, // Format the time as needed
       reason: reason,
     };
 
@@ -1530,7 +1537,9 @@ app.post('/create-notification/:class/:section', async (req, res) => {
     const students = await Student.find({ class: section });
 
     if (students.length === 0) {
-      return res.status(404).json({ message: 'No students found in this class and section' });
+      return res
+        .status(404)
+        .json({ message: "No students found in this class and section" });
     }
 
     // Add the notification to each student's notifications array
@@ -1539,38 +1548,42 @@ app.post('/create-notification/:class/:section', async (req, res) => {
       await student.save();
     });
 
-    res.status(200).json({ message: 'Notification created and sent to students' });
+    res
+      .status(200)
+      .json({ message: "Notification created and sent to students" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to create and send notifications' });
+    res.status(500).json({ error: "Failed to create and send notifications" });
   }
 });
 
-
 // Route for monthly and yearky attendence
 function getSundaysInMonth(year, month) {
-  const firstDay = moment.tz([year, month - 1, 1], 'Asia/Kolkata');
-  const lastDay = moment.tz([year, month - 1, 1], 'Asia/Kolkata').endOf('month');
+  const firstDay = moment.tz([year, month - 1, 1], "Asia/Kolkata");
+  const lastDay = moment
+    .tz([year, month - 1, 1], "Asia/Kolkata")
+    .endOf("month");
 
   let sundays = 0;
   while (firstDay.isSameOrBefore(lastDay)) {
     if (firstDay.day() === 0) {
       sundays++;
     }
-    firstDay.add(1, 'day');
+    firstDay.add(1, "day");
   }
   return sundays;
 }
 
 function getDaysInMonth(year, month) {
-  const firstDay = moment.tz([year, month - 1, 1], 'Asia/Kolkata');
-  const lastDay = moment.tz([year, month - 1, 1], 'Asia/Kolkata').endOf('month');
-  return lastDay.diff(firstDay, 'days') + 1;
+  const firstDay = moment.tz([year, month - 1, 1], "Asia/Kolkata");
+  const lastDay = moment
+    .tz([year, month - 1, 1], "Asia/Kolkata")
+    .endOf("month");
+  return lastDay.diff(firstDay, "days") + 1;
 }
 
-
 //Monthly
-app.get('/monthly-attendance/:loginID/:year/:month', async (req, res) => {
+app.get("/monthly-attendance/:loginID/:year/:month", async (req, res) => {
   try {
     const { loginID, year, month } = req.params;
 
@@ -1578,7 +1591,7 @@ app.get('/monthly-attendance/:loginID/:year/:month', async (req, res) => {
     const teacher = await Teacher.findOne({ loginID });
 
     if (!teacher) {
-      return res.status(404).json({ message: 'Teacher not found' });
+      return res.status(404).json({ message: "Teacher not found" });
     }
 
     // Extract and calculate attendance data
@@ -1586,7 +1599,7 @@ app.get('/monthly-attendance/:loginID/:year/:month', async (req, res) => {
     const totalSundays = getSundaysInMonth(year, month);
     const workingDays = totalDays - totalSundays;
     const presentCount = teacher.present.filter((entry) => {
-      const entryDate = moment(entry.date, 'YYYY-MM-DD');
+      const entryDate = moment(entry.date, "YYYY-MM-DD");
       return entryDate.year() == year && entryDate.month() + 1 == month;
     }).length;
 
@@ -1602,12 +1615,12 @@ app.get('/monthly-attendance/:loginID/:year/:month', async (req, res) => {
     res.status(200).json(monthlyAttendance);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch monthly attendance' });
+    res.status(500).json({ error: "Failed to fetch monthly attendance" });
   }
 });
 
 //Yearly
-app.get('/yearly-attendance/:loginID/:year', async (req, res) => {
+app.get("/yearly-attendance/:loginID/:year", async (req, res) => {
   try {
     const { loginID, year } = req.params;
 
@@ -1615,7 +1628,7 @@ app.get('/yearly-attendance/:loginID/:year', async (req, res) => {
     const teacher = await Teacher.findOne({ loginID });
 
     if (!teacher) {
-      return res.status(404).json({ message: 'Teacher not found' });
+      return res.status(404).json({ message: "Teacher not found" });
     }
 
     const totalYearlyAttendance = {
@@ -1630,7 +1643,7 @@ app.get('/yearly-attendance/:loginID/:year', async (req, res) => {
       const totalDays = getDaysInMonth(year, month);
       const workingDays = totalDays - getSundaysInMonth(year, month);
       const presentCount = teacher.present.filter((entry) => {
-        const entryDate = moment(entry.date, 'YYYY-MM-DD');
+        const entryDate = moment(entry.date, "YYYY-MM-DD");
         return entryDate.year() == year && entryDate.month() == month - 1;
       }).length;
 
@@ -1643,29 +1656,28 @@ app.get('/yearly-attendance/:loginID/:year', async (req, res) => {
     res.status(200).json(totalYearlyAttendance);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch yearly attendance' });
+    res.status(500).json({ error: "Failed to fetch yearly attendance" });
   }
 });
 
 // Import necessary modules and set up your Express app
 
 // Add a route to get all teachers
-app.get('/teachers', async (req, res) => {
+app.get("/teachers", async (req, res) => {
   try {
     // Retrieve all teacher records from the database
     const teachers = await Teacher.find();
-    
+
     // Send the list of teachers as a JSON response
     res.status(200).json(teachers);
   } catch (error) {
     // Handle any errors that occur during the database query
-    res.status(500).json({ error: 'Could not fetch teachers' });
+    res.status(500).json({ error: "Could not fetch teachers" });
   }
 });
 
-
 //Notifications By teacher and visible to students
-app.post('/create-announcement/:class/:section', async (req, res) => {
+app.post("/create-announcement/:class/:section", async (req, res) => {
   try {
     const { class: section } = req.params;
     const { reason, date } = req.body;
@@ -1673,14 +1685,16 @@ app.post('/create-announcement/:class/:section', async (req, res) => {
     // Construct the event data
     const eventData = {
       reason: reason,
-      date: date,   // Format the date as needed
+      date: date, // Format the date as needed
     };
 
     // Find students in the specified class and section
     const students = await Student.find({ class: section });
 
     if (students.length === 0) {
-      return res.status(404).json({ message: 'No students found in this class and section' });
+      return res
+        .status(404)
+        .json({ message: "No students found in this class and section" });
     }
 
     // Add the notification to each student's notifications array
@@ -1689,15 +1703,16 @@ app.post('/create-announcement/:class/:section', async (req, res) => {
       await student.save();
     });
 
-    res.status(200).json({ message: 'Announcement created and sent to students' });
+    res
+      .status(200)
+      .json({ message: "Announcement created and sent to students" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to create and send notifications' });
+    res.status(500).json({ error: "Failed to create and send notifications" });
   }
 });
 
-
-app.get('/yearlyMonthAttendance/:loginID/:year', async (req, res) => {
+app.get("/yearlyMonthAttendance/:loginID/:year", async (req, res) => {
   try {
     const { loginID, year } = req.params;
 
@@ -1705,12 +1720,22 @@ app.get('/yearlyMonthAttendance/:loginID/:year', async (req, res) => {
     const teacher = await Teacher.findOne({ loginID });
 
     if (!teacher) {
-      return res.status(404).json({ message: 'Teacher not found' });
+      return res.status(404).json({ message: "Teacher not found" });
     }
 
     const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
     ];
 
     const yearlyAttendance = [];
@@ -1719,7 +1744,7 @@ app.get('/yearlyMonthAttendance/:loginID/:year', async (req, res) => {
       const totalDays = getDaysInMonth(year, month + 1);
       const workingDays = totalDays - getSundaysInMonth(year, month + 1);
       const presentCount = teacher.present.filter((entry) => {
-        const entryDate = moment(entry.date, 'YYYY-MM-DD');
+        const entryDate = moment(entry.date, "YYYY-MM-DD");
         return entryDate.year() == year && entryDate.month() == month;
       }).length;
 
@@ -1743,13 +1768,11 @@ app.get('/yearlyMonthAttendance/:loginID/:year', async (req, res) => {
     res.status(200).json(totalYearlyAttendance);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch yearly attendance' });
+    res.status(500).json({ error: "Failed to fetch yearly attendance" });
   }
 });
 
-
 const homeworkSchema = new mongoose.Schema({
-  date : String,
   title: String,
   description: String,
   class: Number,
@@ -1757,128 +1780,144 @@ const homeworkSchema = new mongoose.Schema({
   subject: String,
 });
 
-const Homework = mongoose.model('Homework', homeworkSchema);
+const Homework = mongoose.model("Homework", homeworkSchema);
 
 // Route for managing homework assignments
-app.post('/homework/:className/:section/:subject/:date', async (req, res) => {
+app
+  .route("/homework/:className/:section/:subject")
+  .post(async (req, res) => {
     try {
-      const { className, section, subject, date } = req.params;
+      const { className, section, subject } = req.params;
       const { title, description } = req.body;
 
       // Create a new homework assignment
       const homework = new Homework({
-        date,
         title,
         description,
         class: className,
-        section:section,
+        section: section,
         subject,
       });
 
       // Save the homework assignment to the database
       await homework.save();
 
-      res.status(200).json({ message: 'Homework added successfully' });
+      res.status(200).json({ message: "Homework added successfully" });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: 'Failed to add homework' });
+      res.status(500).json({ error: "Failed to add homework" });
     }
-  }) ;
-  app.get('/homework/:className/:section/:date', async (req, res) => {
+  })
+  .get(async (req, res) => {
     try {
-      const { className, section, date } = req.params;
+      const { className, subject } = req.params;
 
       // Find homework assignments based on class and subject
-      const homeworkAssignments = await Homework.find({ class: className, section, date });
+      const homeworkAssignments = await Homework.find({
+        class: className,
+        subject,
+      });
 
       if (homeworkAssignments.length === 0) {
-        return res.status(404).json({ message: 'No homework assignments found for this class and subject' });
+        return res.status(404).json({
+          message: "No homework assignments found for this class and subject",
+        });
       }
 
       res.status(200).json(homeworkAssignments);
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: 'Failed to fetch homework assignments' });
+      res.status(500).json({ error: "Failed to fetch homework assignments" });
     }
   });
 
 // Route to get all sections of a specific class
-app.get('/get-sections/:class', async (req, res) => {
+app.get("/get-sections/:class", async (req, res) => {
   try {
     const { class: className } = req.params; // Rename 'class' to 'className' to avoid conflicts
 
     // Find all unique sections for the given class
-    const sections = await Student.distinct('section', { class: className });
+    const sections = await Student.distinct("section", { class: className });
 
     if (sections.length === 0) {
-      return res.status(404).json({ message: 'No sections found for this class' });
+      return res
+        .status(404)
+        .json({ message: "No sections found for this class" });
     }
 
     res.status(200).json({ sections });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch sections' });
+    res.status(500).json({ error: "Failed to fetch sections" });
   }
 });
 
 //Route to calculate the salary of the employee
-app.get('/calculate-teacher-monthly-salary/:loginID/:year/:month', async (req, res) => {
-  try {
-    const { loginID, year, month } = req.params;
+app.get(
+  "/calculate-teacher-monthly-salary/:loginID/:year/:month",
+  async (req, res) => {
+    try {
+      const { loginID, year, month } = req.params;
 
-    // Find the teacher by loginID
-    const teacher = await Teacher.findOne({ loginID });
+      // Find the teacher by loginID
+      const teacher = await Teacher.findOne({ loginID });
 
-    if (!teacher) {
-      return res.status(404).json({ message: 'Teacher not found' });
+      if (!teacher) {
+        return res.status(404).json({ message: "Teacher not found" });
+      }
+
+      const targetMonth = parseInt(month);
+      const targetYear = parseInt(year);
+
+      // Calculate the total days in the specified month
+      const totalDays = new Date(targetYear, targetMonth, 0).getDate();
+
+      // Filter the teacher's attendance records for the specified month and year
+      const monthlyAttendance = teacher.present.filter((entry) => {
+        const entryDate = entry.date.split("-").map(Number);
+        return entryDate[0] === targetYear && entryDate[1] === targetMonth;
+      });
+
+      // Calculate the teacher's salary based on total working days and total present days
+      const totalWorkingDays =
+        totalDays - getSundaysInMonth(targetYear, targetMonth);
+      const totalPresentDays = monthlyAttendance.length;
+
+      if (totalWorkingDays === 0) {
+        return res
+          .status(400)
+          .json({ message: "No working days in the specified month" });
+      }
+
+      const monthlySalary = (
+        (teacher.salary / totalWorkingDays) *
+        totalPresentDays
+      ).toFixed(0);
+
+      // Extract dates for which the teacher is present and absent in the specified month
+      const presentDates = monthlyAttendance.map((entry) => entry.date);
+      const absentDates = teacher.absent.filter((entry) => {
+        const entryDate = entry.toISOString().split("T")[0]; // Convert Date object to string in "YYYY-MM-DD" format
+        return entryDate.startsWith(`${year}-${month}`);
+      });
+
+      res.status(200).json({
+        thisMonthSalary: monthlySalary,
+        totalSalary: teacher.salary,
+        totalDays: totalWorkingDays,
+        totalPresentDays: totalPresentDays,
+        presentDates: presentDates,
+        absentDates: absentDates,
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to calculate monthly salary" });
     }
-
-    const targetMonth = parseInt(month);
-    const targetYear = parseInt(year);
-
-    // Calculate the total days in the specified month
-    const totalDays = new Date(targetYear, targetMonth, 0).getDate();
-
-    // Filter the teacher's attendance records for the specified month and year
-    const monthlyAttendance = teacher.present.filter((entry) => {
-      const entryDate = entry.date.split('-').map(Number);
-      return entryDate[0] === targetYear && entryDate[1] === targetMonth;
-    });
-
-    // Calculate the teacher's salary based on total working days and total present days
-    const totalWorkingDays = totalDays - getSundaysInMonth(targetYear, targetMonth);
-    const totalPresentDays = monthlyAttendance.length;
-
-    if (totalWorkingDays === 0) {
-      return res.status(400).json({ message: 'No working days in the specified month' });
-    }
-
-    const monthlySalary = ((teacher.salary / totalWorkingDays) * totalPresentDays).toFixed(0);
-
-    // Extract dates for which the teacher is present and absent in the specified month
-    const presentDates = monthlyAttendance.map((entry) => entry.date);
-    const absentDates = teacher.absent.filter((entry) => {
-      const entryDate = entry.toISOString().split('T')[0]; // Convert Date object to string in "YYYY-MM-DD" format
-      return entryDate.startsWith(`${year}-${month}`);
-    });
-
-    res.status(200).json({
-      "thisMonthSalary": monthlySalary,
-      "totalSalary": teacher.salary,
-      "totalDays": totalWorkingDays,
-      "totalPresentDays": totalPresentDays,
-      "presentDates": presentDates,
-      "absentDates": absentDates
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to calculate monthly salary' });
   }
-});
-
+);
 
 //Salary-history
-app.get('/teacher-salary-history/:loginID/:year/:month', async (req, res) => {
+app.get("/teacher-salary-history/:loginID/:year/:month", async (req, res) => {
   try {
     const { loginID, year, month } = req.params;
 
@@ -1886,7 +1925,7 @@ app.get('/teacher-salary-history/:loginID/:year/:month', async (req, res) => {
     const teacher = await Teacher.findOne({ loginID });
 
     if (!teacher) {
-      return res.status(404).json({ message: 'Teacher not found' });
+      return res.status(404).json({ message: "Teacher not found" });
     }
 
     const targetMonth = parseInt(month);
@@ -1897,36 +1936,41 @@ app.get('/teacher-salary-history/:loginID/:year/:month', async (req, res) => {
     for (let m = 1; m <= targetMonth; m++) {
       const totalDays = new Date(targetYear, m, 0).getDate();
       const monthlyAttendance = teacher.present.filter((entry) => {
-        const entryDate = entry.date.split('-').map(Number);
+        const entryDate = entry.date.split("-").map(Number);
         return entryDate[0] === targetYear && entryDate[1] === m;
       });
 
       const totalWorkingDays = totalDays - getSundaysInMonth(targetYear, m);
       const totalPresentDays = monthlyAttendance.length;
-      const monthlySalary = ((teacher.salary / totalWorkingDays) * totalPresentDays).toFixed(0);
+      const monthlySalary = (
+        (teacher.salary / totalWorkingDays) *
+        totalPresentDays
+      ).toFixed(0);
 
       // Get the month name
-      const monthName = new Date(targetYear, m - 1, 1).toLocaleString('default', { month: 'long' });
+      const monthName = new Date(targetYear, m - 1, 1).toLocaleString(
+        "default",
+        { month: "long" }
+      );
 
       salaryHistory.push({
         month: monthName,
-        montNumber : m,
+        montNumber: m,
         year: targetYear,
         attendence: totalPresentDays,
         salary: monthlySalary,
-        
       });
     }
 
     res.status(200).json(salaryHistory);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch salary history' });
+    res.status(500).json({ error: "Failed to fetch salary history" });
   }
 });
 
-//Get Students by its class and section 
-app.get('/get-students/:class/:section', async (req, res) => {
+//Get Students by its class and section
+app.get("/get-students/:class/:section", async (req, res) => {
   try {
     const className = parseInt(req.params.class);
     const section = req.params.section;
@@ -1935,11 +1979,13 @@ app.get('/get-students/:class/:section', async (req, res) => {
     const students = await Student.find({ class: className, section });
 
     if (students.length === 0) {
-      return res.status(404).json({ message: 'No students found in this class and section' });
+      return res
+        .status(404)
+        .json({ message: "No students found in this class and section" });
     }
 
     // Extract loginID and name of each student
-    const studentData = students.map(student => ({
+    const studentData = students.map((student) => ({
       loginID: student.loginID,
       name: student.name,
       class: `${className}-${section}`,
@@ -1948,26 +1994,25 @@ app.get('/get-students/:class/:section', async (req, res) => {
     res.status(200).json(studentData);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch students' });
+    res.status(500).json({ error: "Failed to fetch students" });
   }
 });
 
-//Complaint by teacher for student 
-app.post('/submit-student-complaint/:loginID', async (req, res) => {
+//Complaint by teacher for student
+app.post("/submit-student-complaint/:loginID", async (req, res) => {
   try {
     const { loginID } = req.params;
-    const { title, teacherName, date, complaintText } = req.body;
+    const { teacherName, date, complaintText } = req.body;
 
     // Find the student based on their loginID
     const student = await Student.findOne({ loginID });
 
     if (!student) {
-      return res.status(404).json({ error: 'Student not found' });
+      return res.status(404).json({ error: "Student not found" });
     }
 
     // Create a new complaint
     const complaint = {
-      title,
       teacherName,
       date,
       complaintText,
@@ -1979,33 +2024,31 @@ app.post('/submit-student-complaint/:loginID', async (req, res) => {
     // Save the updated student document
     await student.save();
 
-    res.status(200).json({ message: 'Complaint submitted successfully' });
+    res.status(200).json({ message: "Complaint submitted successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to submit complaint' });
+    res.status(500).json({ error: "Failed to submit complaint" });
   }
 });
 
-
 // Define a route for a teacher to add feedback to a student
-app.post('/add-student-feedback/:loginID', async (req, res) => {
+app.post("/add-student-feedback/:loginID", async (req, res) => {
   try {
     const { loginID } = req.params;
-    const {title, feedbackDate, feedbackText, teacherName } = req.body;
+    const { feedbackDate, feedbackText, teacherName } = req.body;
 
     // Find the student based on their loginID
     const student = await Student.findOne({ loginID });
 
     if (!student) {
-      return res.status(404).json({ error: 'Student not found' });
+      return res.status(404).json({ error: "Student not found" });
     }
 
     // Create a new feedback entry
     const feedbackEntry = {
-      title,
-      teacherName,         // Name of the teacher providing the feedback
-      date: feedbackDate,  // Date of the feedback entry in "DD-MM-YYYY" format
-      text: feedbackText,  // Feedback text
+      teacherName, // Name of the teacher providing the feedback
+      date: feedbackDate, // Date of the feedback entry in "DD-MM-YYYY" format
+      text: feedbackText, // Feedback text
     };
 
     // Add the feedback entry to the student's feedback array
@@ -2014,35 +2057,39 @@ app.post('/add-student-feedback/:loginID', async (req, res) => {
     // Save the updated student document
     await student.save();
 
-    res.status(200).json({ message: 'Feedback added successfully' });
+    res.status(200).json({ message: "Feedback added successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to add feedback' });
+    res.status(500).json({ error: "Failed to add feedback" });
   }
 });
 
-
 // Create a new Mongoose model for exams
 const examSchema = new mongoose.Schema({
-  class: Number,        // Class for which the exam is conducted
-  section: String,     // Section of the class
-  subject: String,     // Subject name for the exam
-  examType: String,    // Type of the exam (e.g., 'Mid-term', 'Final')
+  class: Number, // Class for which the exam is conducted
+  section: String, // Section of the class
+  subject: String, // Subject name for the exam
+  examType: String, // Type of the exam (e.g., 'Mid-term', 'Final')
   examSubType: String, // Subtype of the exam (e.g., 'Unit Test 1', 'Unit Test 2')
-  maxMarks: Number,    // Maximum marks for the exam
+  maxMarks: Number, // Maximum marks for the exam
 });
 
-const Exam = mongoose.model('Exam', examSchema);
+const Exam = mongoose.model("Exam", examSchema);
 
 // Route for a teacher to create a new exam
-app.post('/create-exam', async (req, res) => {
+app.post("/create-exam", async (req, res) => {
   try {
-    const { class: section, subject, examType, examSubType, maxMarks } = req.body;
+    const {
+      class: section,
+      subject,
+      examType,
+      examSubType,
+      maxMarks,
+    } = req.body;
 
     // Create a new exam document
     const exam = new Exam({
-      class:
-      section,
+      class: section,
       subject,
       examType,
       examSubType,
@@ -2052,26 +2099,31 @@ app.post('/create-exam', async (req, res) => {
     // Save the new exam document
     await exam.save();
 
-    res.status(200).json({ message: 'Exam created successfully' , ID:exam._id});
+    res
+      .status(200)
+      .json({ message: "Exam created successfully", ID: exam._id });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to create the exam' });
+    res.status(500).json({ error: "Failed to create the exam" });
   }
 });
 
-
-app.post('/upload-exam-marks/:examID/:cl/:section', async (req, res) => {
+app.post("/upload-exam-marks/:examID/:cl/:section", async (req, res) => {
   try {
     const { examID, cl, section } = req.params;
-    const {marks} = req.body; // Marks data
+    const { marks } = req.body; // Marks data
 
     // Fetch the list of students based on class and section
-    const response = await axios.get(`https://schoolapi-3yo0.onrender.com/get-students/${cl}/${section}`);
+    const response = await axios.get(
+      `https://schoolapi-3yo0.onrender.com/get-students/${cl}/${section}`
+    );
     const students = response.data;
 
     // Check if the length of the students matches the number of marks
     if (students.length !== marks.length) {
-      return res.status(400).json({ error: 'Number of students and marks do not match' });
+      return res
+        .status(400)
+        .json({ error: "Number of students and marks do not match" });
     }
 
     // Iterate through the students and update their exam marks
@@ -2083,7 +2135,7 @@ app.post('/upload-exam-marks/:examID/:cl/:section', async (req, res) => {
       const studentInDB = await Student.findOne({ loginID: student.loginID });
 
       if (!studentInDB) {
-        return res.status(404).json({ error: 'Student not found' });
+        return res.status(404).json({ error: "Student not found" });
       }
 
       // Update the student's exam marks in the database
@@ -2091,15 +2143,14 @@ app.post('/upload-exam-marks/:examID/:cl/:section', async (req, res) => {
       await studentInDB.save();
     }
 
-    res.status(200).json({ message: 'Exam marks uploaded successfully' });
+    res.status(200).json({ message: "Exam marks uploaded successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to upload exam marks' });
+    res.status(500).json({ error: "Failed to upload exam marks" });
   }
 });
 
-
-app.post('/add-lesson-plan/:loginID', async (req, res) => {
+app.post("/add-lesson-plan/:loginID", async (req, res) => {
   try {
     const { loginID } = req.params;
     const { cls, section, date, subject, content } = req.body;
@@ -2108,7 +2159,7 @@ app.post('/add-lesson-plan/:loginID', async (req, res) => {
     const teacher = await Teacher.findOne({ loginID });
 
     if (!teacher) {
-      return res.status(404).json({ error: 'Teacher not found' });
+      return res.status(404).json({ error: "Teacher not found" });
     }
 
     // Create a new lesson plan object
@@ -2126,75 +2177,78 @@ app.post('/add-lesson-plan/:loginID', async (req, res) => {
     // Save the updated teacher document
     await teacher.save();
 
-    res.status(201).json({ message: 'Lesson plan added successfully' });
+    res.status(201).json({ message: "Lesson plan added successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to add lesson plan' });
+    res.status(500).json({ error: "Failed to add lesson plan" });
   }
 });
 
 // Route to get a student's monthly attendance
-app.get('/student-monthly-attendance/:loginID/:year/:month', async (req, res) => {
-  try {
-    const { loginID, year, month } = req.params;
+app.get(
+  "/student-monthly-attendance/:loginID/:year/:month",
+  async (req, res) => {
+    try {
+      const { loginID, year, month } = req.params;
 
-    // Find the student by loginID
-    const student = await Student.findOne({ loginID });
+      // Find the student by loginID
+      const student = await Student.findOne({ loginID });
 
-    if (!student) {
-      return res.status(404).json({ message: 'Student not found' });
-    }
-
-    const targetMonth = parseInt(month);
-    const targetYear = parseInt(year);
-
-    // Calculate the total days in the specified month
-    const totalDays = new Date(targetYear, targetMonth, 0).getDate();
-
-    // Filter and count the student's attendance records for the specified month and year
-    const monthlyAttendance = student.presentDates.filter((date) => {
-      const dateParts = date.split('-');
-      if (dateParts.length === 3) {
-        // Date is in "YYYY-MM-DD" format
-        const [yr, mon, day] = dateParts.map(Number);
-        return yr === targetYear && mon === targetMonth && day <= totalDays;
-      } else {
-        // Attempt to parse the date in various formats
-        const parsedDate = new Date(date);
-        if (!isNaN(parsedDate.getTime())) {
-          const mon = parsedDate.getMonth() + 1; // Months are zero-based
-          const day = parsedDate.getDate();
-          return mon === targetMonth && day <= totalDays;
-        }
+      if (!student) {
+        return res.status(404).json({ message: "Student not found" });
       }
-      return false;
-    });
 
-    // Calculate the working days (excluding Sundays)
-    const totalWorkingDays = totalDays;
+      const targetMonth = parseInt(month);
+      const targetYear = parseInt(year);
 
-    // Calculate the present days for the month
-    const presentCount = monthlyAttendance.length;
+      // Calculate the total days in the specified month
+      const totalDays = new Date(targetYear, targetMonth, 0).getDate();
 
-    // Response data
-    const monthlyAttendanceData = {
-      year: year,
-      month: month,
-      totalDays: totalDays,
-      workingDays: totalWorkingDays,
-      totalSundays: 0,
-      presentCount: presentCount,
-    };
+      // Filter and count the student's attendance records for the specified month and year
+      const monthlyAttendance = student.presentDates.filter((date) => {
+        const dateParts = date.split("-");
+        if (dateParts.length === 3) {
+          // Date is in "YYYY-MM-DD" format
+          const [yr, mon, day] = dateParts.map(Number);
+          return yr === targetYear && mon === targetMonth && day <= totalDays;
+        } else {
+          // Attempt to parse the date in various formats
+          const parsedDate = new Date(date);
+          if (!isNaN(parsedDate.getTime())) {
+            const mon = parsedDate.getMonth() + 1; // Months are zero-based
+            const day = parsedDate.getDate();
+            return mon === targetMonth && day <= totalDays;
+          }
+        }
+        return false;
+      });
 
-    res.status(200).json(monthlyAttendanceData);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to fetch student monthly attendance' });
+      // Calculate the working days (excluding Sundays)
+      const totalWorkingDays = totalDays;
+
+      // Calculate the present days for the month
+      const presentCount = monthlyAttendance.length;
+
+      // Response data
+      const monthlyAttendanceData = {
+        year: year,
+        month: month,
+        totalDays: totalDays,
+        workingDays: totalWorkingDays,
+        totalSundays: 0,
+        presentCount: presentCount,
+      };
+
+      res.status(200).json(monthlyAttendanceData);
+    } catch (error) {
+      console.error(error);
+      res
+        .status(500)
+        .json({ error: "Failed to fetch student monthly attendance" });
+    }
   }
-});
+);
 
-
-// Route to get a student's monthly attendance for the present month and year
 app.get("/student-monthly-attendance/:loginID", async (req, res) => {
   try {
     const { loginID } = req.params;
@@ -2293,7 +2347,7 @@ app.get("/student-monthly-attendance/:loginID", async (req, res) => {
 });
 
 // Route to get a student's monthly attendance
-app.get('/student-monthly-absent/:loginID/:year/:month', async (req, res) => {
+app.get("/student-monthly-absent/:loginID/:year/:month", async (req, res) => {
   try {
     const { loginID, year, month } = req.params;
 
@@ -2301,7 +2355,7 @@ app.get('/student-monthly-absent/:loginID/:year/:month', async (req, res) => {
     const student = await Student.findOne({ loginID });
 
     if (!student) {
-      return res.status(404).json({ message: 'Student not found' });
+      return res.status(404).json({ message: "Student not found" });
     }
 
     const targetMonth = parseInt(month);
@@ -2312,7 +2366,7 @@ app.get('/student-monthly-absent/:loginID/:year/:month', async (req, res) => {
 
     // Filter and count the student's attendance records for the specified month and year
     const monthlyAttendance = student.absentDates.filter((date) => {
-      const dateParts = date.split('-');
+      const dateParts = date.split("-");
       if (dateParts.length === 3) {
         // Date is in "YYYY-MM-DD" format
         const [yr, mon, day] = dateParts.map(Number);
@@ -2348,12 +2402,14 @@ app.get('/student-monthly-absent/:loginID/:year/:month', async (req, res) => {
     res.status(200).json(monthlyAttendanceData);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch student monthly attendance' });
+    res
+      .status(500)
+      .json({ error: "Failed to fetch student monthly attendance" });
   }
 });
 
 // Route to get a student's monthly attendance for the present month and year
-app.get('/student-monthly-absent/:loginID', async (req, res) => {
+app.get("/student-monthly-absent/:loginID", async (req, res) => {
   try {
     const { loginID } = req.params;
 
@@ -2361,7 +2417,7 @@ app.get('/student-monthly-absent/:loginID', async (req, res) => {
     const student = await Student.findOne({ loginID });
 
     if (!student) {
-      return res.status(404).json({ message: 'Student not found' });
+      return res.status(404).json({ message: "Student not found" });
     }
 
     // Get the current date to determine the present month and year
@@ -2374,7 +2430,7 @@ app.get('/student-monthly-absent/:loginID', async (req, res) => {
 
     // Filter and count the student's attendance records for the present month and year
     const monthlyAttendance = student.absentDates.filter((date) => {
-      const dateParts = date.split('-');
+      const dateParts = date.split("-");
       if (dateParts.length === 3) {
         // Date is in "YYYY-MM-DD" format
         const [yr, mon, day] = dateParts.map(Number);
@@ -2410,12 +2466,14 @@ app.get('/student-monthly-absent/:loginID', async (req, res) => {
     res.status(200).json(monthlyAttendanceData);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch student monthly attendance' });
+    res
+      .status(500)
+      .json({ error: "Failed to fetch student monthly attendance" });
   }
 });
 
 // Route to get all notifications for a student by loginID
-app.get('/student-notifications/:loginID', async (req, res) => {
+app.get("/student-notifications/:loginID", async (req, res) => {
   try {
     const { loginID } = req.params;
 
@@ -2423,7 +2481,7 @@ app.get('/student-notifications/:loginID', async (req, res) => {
     const student = await Student.findOne({ loginID });
 
     if (!student) {
-      return res.status(404).json({ message: 'Student not found' });
+      return res.status(404).json({ message: "Student not found" });
     }
 
     // Get the student's notifications
@@ -2432,12 +2490,12 @@ app.get('/student-notifications/:loginID', async (req, res) => {
     res.status(200).json(notifications);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch student notifications' });
+    res.status(500).json({ error: "Failed to fetch student notifications" });
   }
 });
 
 // Route to get all announcements for a student by loginID
-app.get('/student-announcements/:loginID', async (req, res) => {
+app.get("/student-announcements/:loginID", async (req, res) => {
   try {
     const { loginID } = req.params;
 
@@ -2445,7 +2503,7 @@ app.get('/student-announcements/:loginID', async (req, res) => {
     const student = await Student.findOne({ loginID });
 
     if (!student) {
-      return res.status(404).json({ message: 'Student not found' });
+      return res.status(404).json({ message: "Student not found" });
     }
 
     // Get the student's announcements
@@ -2454,12 +2512,12 @@ app.get('/student-announcements/:loginID', async (req, res) => {
     res.status(200).json(announcements);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch student announcements' });
+    res.status(500).json({ error: "Failed to fetch student announcements" });
   }
 });
 
 // Route to get all complaints for a student by loginID
-app.get('/student-complaints/:loginID', async (req, res) => {
+app.get("/student-complaints/:loginID", async (req, res) => {
   try {
     const { loginID } = req.params;
 
@@ -2467,7 +2525,7 @@ app.get('/student-complaints/:loginID', async (req, res) => {
     const student = await Student.findOne({ loginID });
 
     if (!student) {
-      return res.status(404).json({ message: 'Student not found' });
+      return res.status(404).json({ message: "Student not found" });
     }
 
     // Get the student's complaints
@@ -2476,12 +2534,12 @@ app.get('/student-complaints/:loginID', async (req, res) => {
     res.status(200).json(complaints);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch student complaints' });
+    res.status(500).json({ error: "Failed to fetch student complaints" });
   }
 });
 
 // Route to get all complaints for a student by loginID
-app.get('/student-feedback/:loginID', async (req, res) => {
+app.get("/student-feedback/:loginID", async (req, res) => {
   try {
     const { loginID } = req.params;
 
@@ -2489,7 +2547,7 @@ app.get('/student-feedback/:loginID', async (req, res) => {
     const student = await Student.findOne({ loginID });
 
     if (!student) {
-      return res.status(404).json({ message: 'Student not found' });
+      return res.status(404).json({ message: "Student not found" });
     }
 
     // Get the student's complaints
@@ -2498,12 +2556,12 @@ app.get('/student-feedback/:loginID', async (req, res) => {
     res.status(200).json(feedback);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch student complaints' });
+    res.status(500).json({ error: "Failed to fetch student complaints" });
   }
 });
 
 // Route to get student performance by loginID
-app.get('/student-performance/:loginID', async (req, res) => {
+app.get("/student-performance/:loginID", async (req, res) => {
   try {
     const { loginID } = req.params;
 
@@ -2511,7 +2569,7 @@ app.get('/student-performance/:loginID', async (req, res) => {
     const student = await Student.findOne({ loginID });
 
     if (!student) {
-      return res.status(404).json({ message: 'Student not found' });
+      return res.status(404).json({ message: "Student not found" });
     }
 
     // Fetch the student's exam marks
@@ -2548,7 +2606,7 @@ app.get('/student-performance/:loginID', async (req, res) => {
     res.status(200).json(response);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch student performance' });
+    res.status(500).json({ error: "Failed to fetch student performance" });
   }
 });
 
@@ -2781,6 +2839,7 @@ app.get('/view-payment-history/:loginID', async (req, res) => {
   }
 });
 
+
 // =======================================================================
 
 // Route to get students with a birthday today
@@ -2798,7 +2857,7 @@ app.get('/students-birthday-today/:cls', async (req, res) => {
       'class': cls,
       // 'section': sec,
     });
-    console.log(studentsWithBirthdayToday) ;
+    // console.log(studentsWithBirthdayToday) ;
 
     // Filter students whose birthday matches today
     const studentsToday = studentsWithBirthdayToday.filter((student) => {
@@ -2812,8 +2871,6 @@ app.get('/students-birthday-today/:cls', async (req, res) => {
       }
       return false;
     });
-    console.log("======================================");
-    console.log(studentsToday) ;
 
     const studentNames = studentsToday.map((student) => student.name);
     const studentClass = studentsToday.map((student) => student.class);
@@ -2869,7 +2926,7 @@ app.get('/get-notices', async (req, res) => {
   }
 });
 
-// ====================================================================
+// =======================================================================
 app.get('/all-student-announcements', async (req, res) => {
   try {
     // Find all students in the database
@@ -2884,7 +2941,7 @@ app.get('/all-student-announcements', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch student announcements' });
   }
 });
-// ====================================================================
+// =======================================================================
 
 // Start the Express server
 app.listen(port, () => {
