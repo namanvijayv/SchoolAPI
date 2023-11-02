@@ -2797,7 +2797,7 @@ app.get('/students-birthday-today/:cls', async (req, res) => {
       'class': cls,
       // 'section': sec,
     });
-    // console.log(studentsWithBirthdayToday) ;
+    console.log(studentsWithBirthdayToday) ;
 
     // Filter students whose birthday matches today
     const studentsToday = studentsWithBirthdayToday.filter((student) => {
@@ -2811,6 +2811,8 @@ app.get('/students-birthday-today/:cls', async (req, res) => {
       }
       return false;
     });
+    console.log("======================================");
+    console.log(studentsToday) ;
 
     const studentNames = studentsToday.map((student) => student.name);
     const studentClass = studentsToday.map((student) => student.class);
