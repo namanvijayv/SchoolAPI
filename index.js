@@ -2983,6 +2983,27 @@ app.get('/upcoming-birthday/:cls', async (req, res) => {
   }
 });
 
+// ==========================================================
+
+app.get('/get-timetable/:cls/:sec', async (req, res) => {
+  try {
+    const { cls, sec } = req.params;
+
+    // Find the timetable entry based on the class and section
+    const timetable = await Timetable.findOne({ class:cls, section:sec });
+
+    if (!timetable) {
+      return res.status(404).json({ message: 'Timetable not found' });
+    }
+
+    // Return the timetable for the specified class and section
+    res.status(200).json({ timetable: timetable.timetable });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch timetable' });
+  }
+});
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
