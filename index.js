@@ -41,40 +41,40 @@ const studentSchema = new mongoose.Schema({
   address: String,
   loginID: String,
   password: String,
+  DOB: String,
   presentDates: [String],
   absentDates: [String],
   notifications: [
     {
-      date: String,   // Date of the event in "DD-MM-YYYY" format
-      time: String,   // Time of the event
+      date: String, // Date of the event in "DD-MM-YYYY" format
+      time: String, // Time of the event
       reason: String, // Reason for the event
-    }],
+    },
+  ],
   announcement: [
     {
-      date: String,   // Date of the event in "DD-MM-YYYY" format
+      date: String, // Date of the event in "DD-MM-YYYY" format
       reason: String, // Reason for the event
     },
   ],
   complaints: [
     {
-      title : String,
       teacherName: String, // Name of the teacher who submitted the complaint
-      date: String,        // Date of the complaint in "DD-MM-YYYY" format
+      date: String, // Date of the complaint in "DD-MM-YYYY" format
       complaintText: String, // Text of the complaint
     },
   ],
   feedback: [
     {
-      title : String,
       teacherName: String, // Name of the teacher providing the feedback
-      date: String,        // Date of the feedback entry in "DD-MM-YYYY" format
-      text: String,        // Feedback text
-    }
+      date: String, // Date of the feedback entry in "DD-MM-YYYY" format
+      text: String, // Feedback text
+    },
   ],
   examMarks: [
     {
       examID: String, // Identifier for the exam
-      mark: Number,   // Marks obtained by the student
+      mark: Number, // Marks obtained by the student
     },
   ],
   totalFees: Number, // Total fees for the student
@@ -87,7 +87,6 @@ const studentSchema = new mongoose.Schema({
     },
   ],
 });
-
 
 // Pre-save hook to generate loginID and password
 studentSchema.pre("save", function (next) {
@@ -122,6 +121,7 @@ app.post("/students", async (req, res) => {
       motherName,
       fatherName,
       address,
+      DOB,
     } = req.body;
 
     const student = new Student({
@@ -134,6 +134,7 @@ app.post("/students", async (req, res) => {
       motherName,
       fatherName,
       address,
+      DOB,
     });
 
     await student.save();
