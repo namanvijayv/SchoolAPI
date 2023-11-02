@@ -2780,6 +2780,93 @@ app.get('/view-payment-history/:loginID', async (req, res) => {
   }
 });
 
+// =======================================================================
+
+// Route to get students with a birthday today
+app.get('/students-birthday-today/:cls', async (req, res) => {
+  try {
+    // Calculate today's date and extract day and month
+    const today = new Date();
+    const todayDay = today.getDate();
+    const todayMonth = today.getMonth() + 1; // Adding 1 because months are zero-based
+
+    const { cls, sec } = req.params;
+
+    // Find students in the specified class and section whose DOB matches today's date
+    const studentsWithBirthdayToday = await Student.find({
+      'class': cls,
+      // 'section': sec,
+    });
+    // console.log(studentsWithBirthdayToday) ;
+
+    // Filter students whose birthday matches today
+    const studentsToday = studentsWithBirthdayToday.filter((student) => {
+      if (student.DOB) {
+        const dob = student.DOB.split('-');
+        if (dob.length === 3) {
+          const dobDay = parseInt(dob[0], 10);
+          const dobMonth = parseInt(dob[1], 10);
+          return dobDay === todayDay && dobMonth === todayMonth;
+        }
+      }
+      return false;
+    });
+
+    const studentNames = studentsToday.map((student) => student.name);
+    const studentClass = studentsToday.map((student) => student.class);
+    const studentSection = studentsToday.map((student) => student.section);
+    const studentID = studentsToday.map((student) => student.loginID);
+
+    res.status(200).json({ students: studentNames, class : studentClass, section : studentSection, loginID : studentID });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch students with birthdays today' });
+  }
+});
+
+// =======================================================================
+
+// Notice Board Schema
+const noticeSchema = new mongoose.Schema({
+  date: String,      // Date of the notice in "DD-MM-YYYY" format
+  time: String,      // Time of the notice
+  title: String,     // Title of the notice
+  description: String, // Description or content of the notice
+});
+const Notice = mongoose.model('Notice', noticeSchema);
+
+// Route to post a notice
+app.post('/post-notice', async (req, res) => {
+  try {
+    const { date, time, title, description } = req.body;
+
+    // Create a new notice
+    const notice = new Notice({ date, time, title, description });
+
+    // Save the notice to the database
+    await notice.save();
+
+    res.status(201).json({ message: 'Notice posted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to post notice' });
+  }
+});
+
+// Route to get all notices
+app.get('/get-notices', async (req, res) => {
+  try {
+    // Retrieve all notices from the database
+    const notices = await Notice.find();
+
+    res.status(200).json(notices);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch notices' });
+  }
+});
+
+// ====================================================================
 
 // Start the Express server
 app.listen(port, () => {
