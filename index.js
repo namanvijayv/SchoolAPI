@@ -2867,6 +2867,21 @@ app.get('/get-notices', async (req, res) => {
 });
 
 // ====================================================================
+app.get('/all-student-announcements', async (req, res) => {
+  try {
+    // Find all students in the database
+    const students = await Student.find();
+
+    // Extract announcements from all student records
+    const allAnnouncements = students.map((student) => student.announcement).flat();
+
+    res.status(200).json({ announcements: allAnnouncements });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch student announcements' });
+  }
+});
+// ====================================================================
 
 // Start the Express server
 app.listen(port, () => {
