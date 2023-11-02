@@ -2072,6 +2072,7 @@ const examSchema = new mongoose.Schema({
   examType: String, // Type of the exam (e.g., 'Mid-term', 'Final')
   examSubType: String, // Subtype of the exam (e.g., 'Unit Test 1', 'Unit Test 2')
   maxMarks: Number, // Maximum marks for the exam
+  date : String,
 });
 
 const Exam = mongoose.model("Exam", examSchema);
@@ -2085,6 +2086,7 @@ app.post("/create-exam", async (req, res) => {
       examType,
       examSubType,
       maxMarks,
+      date,
     } = req.body;
 
     // Create a new exam document
@@ -2094,6 +2096,7 @@ app.post("/create-exam", async (req, res) => {
       examType,
       examSubType,
       maxMarks,
+      date,
     });
 
     // Save the new exam document
@@ -2177,7 +2180,7 @@ app.post("/add-lesson-plan/:loginID", async (req, res) => {
     // Save the updated teacher document
     await teacher.save();
 
-    res.status(201).json({ message: "Lesson plan added successfully" });
+    res.status(200).json({ message: "Lesson plan added successfully" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to add lesson plan" });
@@ -2667,7 +2670,7 @@ app.post('/create-timetable/:cla/:sec', async (req, res) => {
 
     await newTimetable.save();
 
-    res.status(201).json({ message: 'Timetable created successfully' });
+    res.status(200).json({ message: 'Timetable created successfully' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to create timetable' });
@@ -2906,7 +2909,7 @@ app.post('/post-notice', async (req, res) => {
     // Save the notice to the database
     await notice.save();
 
-    res.status(201).json({ message: 'Notice posted successfully' });
+    res.status(200).json({ message: 'Notice posted successfully' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to post notice' });
