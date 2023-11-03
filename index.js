@@ -3205,7 +3205,7 @@ app.get("/student-monthly-report/:loginID", async (req, res) => {
     const currentDate = new Date();
     const targetMonth = currentDate.getMonth() +1 ;  // Adding 1 to get the correct month (zero-based index)
     const targetYear = currentDate.getFullYear();
-    console.log(targetMonth);
+    // console.log(targetMonth);
 
     // Calculate the total days in the present month
     const totalDays = new Date(targetYear, targetMonth, 0).getDate();
@@ -3243,7 +3243,9 @@ app.get("/student-monthly-report/:loginID", async (req, res) => {
       const month = parseInt(examDate[1], 10);
       const year = parseInt(examDate[2], 10);
 
+      
       if (month === targetMonth && year === targetYear) {
+        // console.log("exam") ;
         // This exam is in the current month, process its marks
     
         // Define the structure for this exam type if it doesn't exist
@@ -3251,10 +3253,11 @@ app.get("/student-monthly-report/:loginID", async (req, res) => {
     
         // Define the structure for this exam subtype if it doesn't exist
         monthlyMarks[exam.examType][exam.examSubType] =
-          monthlyMarks[exam.examType][exam.examSubType] || { subjects: [], marks: [] };
+          monthlyMarks[exam.examType][exam.examSubType] || { subjects: [], maxMarks : [], marks: [] };
     
         // Store the marks for this subject
         monthlyMarks[exam.examType][exam.examSubType].subjects.push(exam.subject);
+        monthlyMarks[exam.examType][exam.examSubType].maxMarks.push(exam.maxMarks);
         monthlyMarks[exam.examType][exam.examSubType].marks.push(
           student.examMarks.find((entry) => entry.examID === exam._id.toString())?.mark || 0
         );
@@ -3282,6 +3285,7 @@ app.get("/student-monthly-report/:loginID", async (req, res) => {
 });
 
 // ==========================================================
+
 app.get("/student-yearly-report/:loginID", async (req, res) => {
   try {
     const { loginID } = req.params;
@@ -3335,10 +3339,11 @@ app.get("/student-yearly-report/:loginID", async (req, res) => {
     
         // Define the structure for this exam subtype if it doesn't exist
         yearlyMarks[exam.examType][exam.examSubType] =
-        yearlyMarks[exam.examType][exam.examSubType] || { subjects: [], marks: [] };
+        yearlyMarks[exam.examType][exam.examSubType] || { subjects: [], maxMarks : [], marks: [] };
     
         // Store the marks for this subject
         yearlyMarks[exam.examType][exam.examSubType].subjects.push(exam.subject);
+        yearlyMarks[exam.examType][exam.examSubType].maxMarks.push(exam.maxMarks);
         yearlyMarks[exam.examType][exam.examSubType].marks.push(
           student.examMarks.find((entry) => entry.examID === exam._id.toString())?.mark || 0
         );
@@ -3363,7 +3368,6 @@ app.get("/student-yearly-report/:loginID", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch student monthly report" });
   }
 });
-
 
 // ==========================================================
 
