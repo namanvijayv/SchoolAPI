@@ -9,6 +9,7 @@ const moment = require("moment-timezone");
 const http = require("http");
 const socketIo = require("socket.io");
 const axios = require("axios");
+const multer = require("multer");
 
 // Create an Express application
 const app = express();
@@ -99,7 +100,8 @@ studentSchema.pre("save", function (next) {
 
     // Construct loginID and password based on the provided criteria
     student.loginID = randomWord + randomNumbers;
-    student.password = student.name.substring(0, 3) + student.appRegNumber.substring(0, 4);
+    student.password =
+      student.name.substring(0, 3) + student.appRegNumber.substring(0, 4);
   }
 
   next();
@@ -2072,7 +2074,7 @@ const examSchema = new mongoose.Schema({
   examType: String, // Type of the exam (e.g., 'Mid-term', 'Final')
   examSubType: String, // Subtype of the exam (e.g., 'Unit Test 1', 'Unit Test 2')
   maxMarks: Number, // Maximum marks for the exam
-  date : String,
+  date: String,
 });
 
 const Exam = mongoose.model("Exam", examSchema);
@@ -2180,7 +2182,7 @@ app.post("/add-lesson-plan/:loginID", async (req, res) => {
     // Save the updated teacher document
     await teacher.save();
 
-    res.status(200).json({ message: "Lesson plan added successfully" });
+    res.status(201).json({ message: "Lesson plan added successfully" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to add lesson plan" });
@@ -2622,7 +2624,7 @@ app.get("/subjects/:className/:section/:date", async (req, res) => {
     const subjects = await Homework.find({
       class: className,
       section,
-      date
+      date,
     });
 
     if (subjects.length === 0) {
@@ -2631,14 +2633,14 @@ app.get("/subjects/:className/:section/:date", async (req, res) => {
       });
     }
 
-    const subjectList = subjects.map(subject => subject.subject);
+    const subjectList = subjects.map((subject) => subject.subject);
 
     res.status(200).json(subjectList);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to fetch homework assignments" });
   }
-})
+});
 
 // Define your timetable schema
 const timetableSchema = new mongoose.Schema({
@@ -2654,51 +2656,51 @@ const timetableSchema = new mongoose.Schema({
   },
 });
 
-const Timetable = mongoose.model('Timetable', timetableSchema);
+const Timetable = mongoose.model("Timetable", timetableSchema);
 
 // Create a new timetable
-app.post('/create-timetable/:cla/:sec', async (req, res) => {
+app.post("/create-timetable/:cla/:sec", async (req, res) => {
   try {
-    const { cla, sec} = req.params;
+    const { cla, sec } = req.params;
     const { timetable } = req.body;
 
     const newTimetable = new Timetable({
       class: cla,
-      section : sec,
+      section: sec,
       timetable,
     });
 
     await newTimetable.save();
 
-    res.status(200).json({ message: 'Timetable created successfully' });
+    res.status(201).json({ message: "Timetable created successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to create timetable' });
+    res.status(500).json({ error: "Failed to create timetable" });
   }
 });
 
 // Retrieve a timetable by class and section
-app.get('/get-timetable/:cla/:sec', async (req, res) => {
+app.get("/get-timetable/:cla/:sec", async (req, res) => {
   try {
     const { cla, sec } = req.params;
 
-    const timetable = await Timetable.findOne({ class:cla , section:sec });
+    const timetable = await Timetable.findOne({ class: cla, section: sec });
 
     if (!timetable) {
-      return res.status(404).json({ message: 'Timetable not found' });
+      return res.status(404).json({ message: "Timetable not found" });
     }
 
     res.status(200).json(timetable);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch timetable' });
+    res.status(500).json({ error: "Failed to fetch timetable" });
   }
 });
 
-// ============================= Time Table Ends ================================
+// ======================== Time Table Ends ============================
 
 // Add Total Fees for a Student
-app.post('/add-total-fees/:loginID', async (req, res) => {
+app.post("/add-total-fees/:loginID", async (req, res) => {
   try {
     const { loginID } = req.params;
     const { totalFees } = req.body;
@@ -2707,7 +2709,7 @@ app.post('/add-total-fees/:loginID', async (req, res) => {
     const student = await Student.findOne({ loginID });
 
     if (!student) {
-      return res.status(404).json({ error: 'Student not found' });
+      return res.status(404).json({ error: "Student not found" });
     }
 
     // Calculate the quarterly fees
@@ -2715,9 +2717,24 @@ app.post('/add-total-fees/:loginID', async (req, res) => {
 
     // Initialize feesDistributions with quarterly data
     student.feesDistributions = [
-      { quarter: 'Apr-Jul', totalQuarterlyFees: quarterlyFee, feesPaid: 0, modeOfPayment: '' },
-      { quarter: 'Aug-Nov', totalQuarterlyFees: quarterlyFee, feesPaid: 0, modeOfPayment: '' },
-      { quarter: 'Dec-Mar', totalQuarterlyFees: quarterlyFee, feesPaid: 0, modeOfPayment: '' },
+      {
+        quarter: "Apr-Jul",
+        totalQuarterlyFees: quarterlyFee,
+        feesPaid: 0,
+        modeOfPayment: "",
+      },
+      {
+        quarter: "Aug-Nov",
+        totalQuarterlyFees: quarterlyFee,
+        feesPaid: 0,
+        modeOfPayment: "",
+      },
+      {
+        quarter: "Dec-Mar",
+        totalQuarterlyFees: quarterlyFee,
+        feesPaid: 0,
+        modeOfPayment: "",
+      },
       // { quarter: 'Q4', totalQuarterlyFees: quarterlyFee, feesPaid: 0, modeOfPayment: '' },
     ];
 
@@ -2727,15 +2744,15 @@ app.post('/add-total-fees/:loginID', async (req, res) => {
     // Save the updated student document
     await student.save();
 
-    res.status(200).json({ message: 'Total fees added successfully' });
+    res.status(200).json({ message: "Total fees added successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to add total fees' });
+    res.status(500).json({ error: "Failed to add total fees" });
   }
 });
 
 // Pay Fees for a Specific Quarter
-app.post('/pay-fees/:loginID', async (req, res) => {
+app.post("/pay-fees/:loginID", async (req, res) => {
   try {
     const { loginID } = req.params;
     const { quarter, amountPaid, modeOfPayment } = req.body;
@@ -2744,7 +2761,7 @@ app.post('/pay-fees/:loginID', async (req, res) => {
     const student = await Student.findOne({ loginID });
 
     if (!student) {
-      return res.status(404).json({ error: 'Student not found' });
+      return res.status(404).json({ error: "Student not found" });
     }
 
     // Find the corresponding quarter in feesDistributions
@@ -2753,7 +2770,7 @@ app.post('/pay-fees/:loginID', async (req, res) => {
     );
 
     if (quarterIndex === -1) {
-      return res.status(404).json({ error: 'Quarter not found' });
+      return res.status(404).json({ error: "Quarter not found" });
     }
 
     // Update feesPaid and modeOfPayment for the selected quarter
@@ -2771,15 +2788,15 @@ app.post('/pay-fees/:loginID', async (req, res) => {
     // Save the updated student document
     await student.save();
 
-    res.status(200).json({ message: 'Fees payment successful' });
+    res.status(200).json({ message: "Fees payment successful" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to pay fees' });
+    res.status(500).json({ error: "Failed to pay fees" });
   }
 });
 
 // View Total Fees for a Student
-app.get('/view-total-fees/:loginID', async (req, res) => {
+app.get("/view-total-fees/:loginID", async (req, res) => {
   try {
     const { loginID } = req.params;
 
@@ -2787,18 +2804,18 @@ app.get('/view-total-fees/:loginID', async (req, res) => {
     const student = await Student.findOne({ loginID });
 
     if (!student) {
-      return res.status(404).json({ error: 'Student not found' });
+      return res.status(404).json({ error: "Student not found" });
     }
 
     res.status(200).json({ totalFees: student.totalFees });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch total fees' });
+    res.status(500).json({ error: "Failed to fetch total fees" });
   }
 });
 
 // View Quarterwise Fees Distribution
-app.get('/view-quarterwise-fees/:loginID', async (req, res) => {
+app.get("/view-quarterwise-fees/:loginID", async (req, res) => {
   try {
     const { loginID } = req.params;
 
@@ -2806,18 +2823,18 @@ app.get('/view-quarterwise-fees/:loginID', async (req, res) => {
     const student = await Student.findOne({ loginID });
 
     if (!student) {
-      return res.status(404).json({ error: 'Student not found' });
+      return res.status(404).json({ error: "Student not found" });
     }
 
     res.status(200).json({ feesDistributions: student.feesDistributions });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch quarterwise fees' });
+    res.status(500).json({ error: "Failed to fetch quarterwise fees" });
   }
 });
 
 // View Payment History for a Student
-app.get('/view-payment-history/:loginID', async (req, res) => {
+app.get("/view-payment-history/:loginID", async (req, res) => {
   try {
     const { loginID } = req.params;
 
@@ -2825,7 +2842,7 @@ app.get('/view-payment-history/:loginID', async (req, res) => {
     const student = await Student.findOne({ loginID });
 
     if (!student) {
-      return res.status(404).json({ error: 'Student not found' });
+      return res.status(404).json({ error: "Student not found" });
     }
 
     // Extract payment history from feesDistributions
@@ -2838,15 +2855,14 @@ app.get('/view-payment-history/:loginID', async (req, res) => {
     res.status(200).json({ paymentHistory });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch payment history' });
+    res.status(500).json({ error: "Failed to fetch payment history" });
   }
 });
-
 
 // =======================================================================
 
 // Route to get students with a birthday today
-app.get('/students-birthday-today/:cls', async (req, res) => {
+app.get("/students-birthday-today/:cls", async (req, res) => {
   try {
     // Calculate today's date and extract day and month
     const today = new Date();
@@ -2857,7 +2873,7 @@ app.get('/students-birthday-today/:cls', async (req, res) => {
 
     // Find students in the specified class and section whose DOB matches today's date
     const studentsWithBirthdayToday = await Student.find({
-      'class': cls,
+      class: cls,
       // 'section': sec,
     });
     // console.log(studentsWithBirthdayToday) ;
@@ -2865,7 +2881,7 @@ app.get('/students-birthday-today/:cls', async (req, res) => {
     // Filter students whose birthday matches today
     const studentsToday = studentsWithBirthdayToday.filter((student) => {
       if (student.DOB) {
-        const dob = student.DOB.split('-');
+        const dob = student.DOB.split("-");
         if (dob.length === 3) {
           const dobDay = parseInt(dob[0], 10);
           const dobMonth = parseInt(dob[1], 10);
@@ -2880,10 +2896,17 @@ app.get('/students-birthday-today/:cls', async (req, res) => {
     const studentSection = studentsToday.map((student) => student.section);
     const studentID = studentsToday.map((student) => student.loginID);
 
-    res.status(200).json({ students: studentNames, class : studentClass, section : studentSection, loginID : studentID });
+    res.status(200).json({
+      students: studentNames,
+      class: studentClass,
+      section: studentSection,
+      loginID: studentID,
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch students with birthdays today' });
+    res
+      .status(500)
+      .json({ error: "Failed to fetch students with birthdays today" });
   }
 });
 
@@ -2891,15 +2914,15 @@ app.get('/students-birthday-today/:cls', async (req, res) => {
 
 // Notice Board Schema
 const noticeSchema = new mongoose.Schema({
-  date: String,      // Date of the notice in "DD-MM-YYYY" format
-  time: String,      // Time of the notice
-  title: String,     // Title of the notice
+  date: String, // Date of the notice in "DD-MM-YYYY" format
+  time: String, // Time of the notice
+  title: String, // Title of the notice
   description: String, // Description or content of the notice
 });
-const Notice = mongoose.model('Notice', noticeSchema);
+const Notice = mongoose.model("Notice", noticeSchema);
 
 // Route to post a notice
-app.post('/post-notice', async (req, res) => {
+app.post("/post-notice", async (req, res) => {
   try {
     const { date, time, title, description } = req.body;
 
@@ -2909,15 +2932,15 @@ app.post('/post-notice', async (req, res) => {
     // Save the notice to the database
     await notice.save();
 
-    res.status(200).json({ message: 'Notice posted successfully' });
+    res.status(201).json({ message: "Notice posted successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to post notice' });
+    res.status(500).json({ error: "Failed to post notice" });
   }
 });
 
 // Route to get all notices
-app.get('/get-notices', async (req, res) => {
+app.get("/get-notices", async (req, res) => {
   try {
     // Retrieve all notices from the database
     const notices = await Notice.find();
@@ -2925,28 +2948,179 @@ app.get('/get-notices', async (req, res) => {
     res.status(200).json(notices);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch notices' });
+    res.status(500).json({ error: "Failed to fetch notices" });
   }
 });
 
 // =======================================================================
-app.get('/all-student-announcements', async (req, res) => {
+app.get("/all-student-announcements", async (req, res) => {
   try {
     // Find all students in the database
     const students = await Student.find();
 
     // Extract announcements from all student records
-    const allAnnouncements = students.map((student) => student.announcement).flat();
+    const allAnnouncements = students
+      .map((student) => student.announcement)
+      .flat();
 
     res.status(200).json({ announcements: allAnnouncements });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch student announcements' });
+    res.status(500).json({ error: "Failed to fetch student announcements" });
   }
 });
 // =======================================================================
 
-app.get('/upcoming-birthday/:cls', async (req, res) => {
+// // Set up Multer to handle file uploads
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, 'C:/Users/Hp/Desktop/My Desktop/SchoolAPI/uploads/'); // Define the directory where the files will be stored
+//   },
+//   filename: (req, file, cb) => {
+//     const extname = path.extname(file.originalname);
+//     const { cls, sec, title } = req.params; // Get cls, sec, and title from request params
+
+//     // Generate the filename using class, section, title, and the file extension
+//     const filename = `${cls}-${sec}-${title}${extname}`;
+//     cb(null, filename);
+//   },
+// });
+// const upload = multer({ storage });
+// app.post('/upload-notes/:cls/:sec', (req, res) => {
+//   try {
+//     const { cls, sec } = req.params;
+//     const { title, description } = req.body;
+
+//     const storage = multer.diskStorage({
+//       destination: (req, file, cb) => {
+//         cb(null, 'C:/Users/Hp/Desktop/My Desktop/SchoolAPI/uploads/'); // Define the directory where the files will be stored
+//       },
+//       filename: (req, file, cb) => {
+//         const extname = path.extname(file.originalname);
+
+//         // Generate the filename using class, section, title, and the file extension
+//         const filename = `${cls}-${sec}-${title}${extname}`;
+//         cb(null, filename);
+//       },
+//     });
+
+//     const upload = multer({ storage }).single('file');
+
+//     upload(req, res, (err) => {
+//       if (err) {
+//         console.error(err);
+//         return res.status(500).json({ error: 'Failed to upload notes' });
+//       }
+
+//       // Process the uploaded file, save its details to the database, etc.
+//       // You can use the 'filename' variable here.
+
+//       res.status(200).json({ message: 'Notes uploaded successfully' });
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Failed to upload notes' });
+//   }
+// });
+// // Define a route to get all uploaded notes for a specific class and section
+// app.get('/get-notes/:cls/:sec', (req, res) => {
+//   try {
+//     const { cls, sec } = req.params;
+//     const notesDirectory = path.join(__dirname, 'uploads/');
+//     console.log(notesDirectory)
+//     // Read the files in the "uploads" directory and filter by class and section
+//     fs.readdir(notesDirectory, (err, files) => {
+//       if (err) {
+//         console.error(err);
+//         return res.status(500).json({ error: 'Failed to retrieve notes' });
+//       }
+
+//       const filteredNotes = files
+//         .map((filename) => {
+//           const [noteClass, noteSection] = filename.split('-');
+//           if (noteClass === cls && noteSection === sec) {
+//             return filename;
+//           }
+//         })
+//         .filter((filename) => filename);
+
+//       res.status(200).json({ notes: filteredNotes });
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Failed to retrieve notes' });
+//   }
+// });
+
+// ==========================================================
+
+// Set up Multer to handle file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const { cls, sec } = req.params;
+    const uploadPath = `C:/Users/Hp/Desktop/My Desktop/SchoolAPI/uploads/${cls}-${sec}/`;
+
+    // Ensure the directory exists
+    fs.mkdir(uploadPath, { recursive: true }, (err) => {
+      if (err) {
+        return cb(err, null);
+      }
+      cb(null, uploadPath);
+    });
+  },
+  filename: (req, file, cb) => {
+    const extname = path.extname(file.originalname);
+    const { title } = req.body;
+
+    // Generate the filename using class, section, title, and the file extension
+    const filename = `${title}${extname}`;
+    cb(null, filename);
+  },
+});
+
+const upload = multer({ storage });
+
+app.post("/upload-notes/:cls/:sec", upload.single("file"), (req, res) => {
+  try {
+    // Process the uploaded file, save its details to the database, etc.
+    // You can use the 'cls', 'sec', 'title', and 'file' variables here.
+
+    res.status(200).json({ message: "Notes uploaded successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to upload notes" });
+  }
+});
+
+app.get("/get-notes/:cls/:sec", (req, res) => {
+  try {
+    const { cls, sec } = req.params;
+    const notesDirectory = path.join(__dirname, "uploads", `${cls}-${sec}`);
+
+    // Read the files in the directory
+    fs.readdir(notesDirectory, (err, files) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Failed to retrieve notes" });
+      }
+
+      // Generate URLs for each file
+      const notes = files.map((filename) => {
+        const filePath = path.join(notesDirectory, filename);
+        return { name: filename, url: filePath };
+      });
+
+      res.status(200).json({ notes });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to retrieve notes" });
+  }
+});
+
+// ==========================================================
+
+app.get("/upcoming-birthday/:cls", async (req, res) => {
   try {
     // Calculate today's date and extract day and month
     const today = new Date();
@@ -2957,14 +3131,14 @@ app.get('/upcoming-birthday/:cls', async (req, res) => {
 
     // Find students in the specified class and section whose DOB matches today's date
     const studentsWithBirthdayToday = await Student.find({
-      'class': cls,
+      class: cls,
     });
     // console.log(studentsWithBirthdayToday) ;
 
     // Filter students whose birthday matches today
     const studentsToday = studentsWithBirthdayToday.filter((student) => {
       if (student.DOB) {
-        const dob = student.DOB.split('-');
+        const dob = student.DOB.split("-");
         if (dob.length === 3) {
           const dobDay = parseInt(dob[0], 10);
           const dobMonth = parseInt(dob[1], 10);
@@ -2979,31 +3153,133 @@ app.get('/upcoming-birthday/:cls', async (req, res) => {
     const studentSection = studentsToday.map((student) => student.section);
     const studentID = studentsToday.map((student) => student.loginID);
 
-    res.status(200).json({ students: studentNames, class : studentClass, section : studentSection, loginID : studentID });
+    res.status(200).json({
+      students: studentNames,
+      class: studentClass,
+      section: studentSection,
+      loginID: studentID,
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch students with birthdays today' });
+    res
+      .status(500)
+      .json({ error: "Failed to fetch students with birthdays today" });
   }
 });
 
 // ==========================================================
 
-app.get('/get-timetable/:cls/:sec', async (req, res) => {
+app.get("/get-timetable/:cls/:sec", async (req, res) => {
   try {
     const { cls, sec } = req.params;
 
     // Find the timetable entry based on the class and section
-    const timetable = await Timetable.findOne({ class:cls, section:sec });
+    const timetable = await Timetable.findOne({ class: cls, section: sec });
 
     if (!timetable) {
-      return res.status(404).json({ message: 'Timetable not found' });
+      return res.status(404).json({ message: "Timetable not found" });
     }
 
     // Return the timetable for the specified class and section
     res.status(200).json({ timetable: timetable.timetable });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch timetable' });
+    res.status(500).json({ error: "Failed to fetch timetable" });
+  }
+});
+
+// ==========================================================
+
+app.get("/student-monthly-report/:loginID", async (req, res) => {
+  try {
+    const { loginID } = req.params;
+
+    // Find the student by loginID
+    const student = await Student.findOne({ loginID });
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    // Get the current date to determine the present month and year
+    const currentDate = new Date();
+    const targetMonth = currentDate.getMonth() + 1;  // Adding 1 to get the correct month (zero-based index)
+    const targetYear = currentDate.getFullYear();
+    console.log(targetMonth);
+
+    // Calculate the total days in the present month
+    const totalDays = new Date(targetYear, targetMonth, 0).getDate();
+    // console.log(totalDays);
+
+    // Filter and count feedback, complaints, and marks for the present month
+    const monthlyFeedback = student.feedback.filter((entry) => {
+      const entryDate = entry.date.split("-");
+      const month = parseInt(entryDate[1], 10);
+      const year = parseInt(entryDate[2], 10);
+      return month === targetMonth && year === targetYear;
+    });
+
+    const monthlyComplaints = student.complaints.filter((entry) => {
+      const entryDate = entry.date.split("-");
+      const month = parseInt(entryDate[1], 10);
+      const year = parseInt(entryDate[2], 10);
+      return month === targetMonth && year === targetYear;
+    });
+
+    // Get all exam IDs for the student
+    const examIDs = student.examMarks.map((entry) => entry.examID);
+
+    // Fetch all exams for the student
+    const exams = await Exam.find({ _id: { $in: examIDs } });
+    
+    
+    // Define an object to store the monthly marks
+    var monthlyMarks = {};
+
+    // Filter exams for the present month
+    exams.forEach((exam) => {
+      if(exam.date){
+      const examDate = exam.date.split("-");
+      const month = parseInt(examDate[1], 10);
+      const year = parseInt(examDate[2], 10);
+
+      if (month === targetMonth && year === targetYear) {
+        // This exam is in the current month, process its marks
+
+        // Define the structure for this exam type if it doesn't exist
+        monthlyMarks[exam.examType] = monthlyMarks[exam.examType] || {};
+
+        // Define the structure for this exam subtype if it doesn't exist
+        monthlyMarks[exam.examType][exam.examSubType] =
+          monthlyMarks[exam.examType][exam.examSubType] || {};
+
+        // Store the marks for this subject
+        monthlyMarks[exam.examType][exam.examSubType][exam.subject] =
+          student.examMarks.find(
+            (entry) => entry.examID === exam._id.toString()
+          )?.mark || 0;
+      }
+    }else{
+      monthlyMarks = "Data Not Found" ;
+    }
+  });
+
+    // Now, monthlyMarks should contain the structured marks for the current month
+    // console.log(monthlyMarks);
+
+    // Response data
+    const monthlyReport = {
+      year: targetYear,
+      month: targetMonth,
+      feedback: monthlyFeedback,
+      complaints: monthlyComplaints,
+      marks: monthlyMarks,
+    };
+
+    res.status(200).json(monthlyReport);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch student monthly report" });
   }
 });
 
