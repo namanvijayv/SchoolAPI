@@ -3203,7 +3203,7 @@ app.get("/student-monthly-report/:loginID", async (req, res) => {
 
     // Get the current date to determine the present month and year
     const currentDate = new Date();
-    const targetMonth = currentDate.getMonth() + 1;  // Adding 1 to get the correct month (zero-based index)
+    const targetMonth = currentDate.getMonth() +1 ;  // Adding 1 to get the correct month (zero-based index)
     const targetYear = currentDate.getFullYear();
     console.log(targetMonth);
 
@@ -3234,7 +3234,7 @@ app.get("/student-monthly-report/:loginID", async (req, res) => {
     
     
     // Define an object to store the monthly marks
-    var monthlyMarks = {};
+    const monthlyMarks = {};
 
     // Filter exams for the present month
     exams.forEach((exam) => {
@@ -3259,8 +3259,6 @@ app.get("/student-monthly-report/:loginID", async (req, res) => {
             (entry) => entry.examID === exam._id.toString()
           )?.mark || 0;
       }
-    }else{
-      monthlyMarks = "Data Not Found" ;
     }
   });
 
@@ -3282,6 +3280,92 @@ app.get("/student-monthly-report/:loginID", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch student monthly report" });
   }
 });
+
+// ==========================================================
+
+app.get("/student-yearly-report/:loginID", async (req, res) => {
+  try {
+    const { loginID } = req.params;
+
+    // Find the student by loginID
+    const student = await Student.findOne({ loginID });
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    // Get the current date to determine the present month and year
+    const currentDate = new Date();
+    const targetYear = currentDate.getFullYear();
+
+
+    // Filter and count feedback, complaints, and marks for the present month
+    const yearlyFeedback = student.feedback.filter((entry) => {
+      const entryDate = entry.date.split("-");
+      const year = parseInt(entryDate[2], 10);
+      return year === targetYear;
+    });
+
+    const yearlyComplaints = student.complaints.filter((entry) => {
+      const entryDate = entry.date.split("-");
+      const year = parseInt(entryDate[2], 10);
+      return year === targetYear;
+    });
+
+    // Get all exam IDs for the student
+    const examIDs = student.examMarks.map((entry) => entry.examID);
+
+    // Fetch all exams for the student
+    const exams = await Exam.find({ _id: { $in: examIDs } });
+    
+    
+    // Define an object to store the monthly marks
+    const yearlyMarks = {};
+
+    // Filter exams for the present month
+    exams.forEach((exam) => {
+      if(exam.date){
+      const examDate = exam.date.split("-");
+      const year = parseInt(examDate[2], 10);
+
+      if (year === targetYear) {
+        // This exam is in the current month, process its marks
+
+        // Define the structure for this exam type if it doesn't exist
+        yearlyMarks[exam.examType] = yearlyMarks[exam.examType] || {};
+
+        // Define the structure for this exam subtype if it doesn't exist
+        yearlyMarks[exam.examType][exam.examSubType] =
+        yearlyMarks[exam.examType][exam.examSubType] || {};
+
+        // Store the marks for this subject
+        yearlyMarks[exam.examType][exam.examSubType][exam.subject] =
+          student.examMarks.find(
+            (entry) => entry.examID === exam._id.toString()
+          )?.mark || 0;
+      }
+    }
+  });
+
+    // Now, monthlyMarks should contain the structured marks for the current month
+    // console.log(monthlyMarks);
+
+    // Response data
+    const yearlyReport = {
+      year: targetYear,
+      feedback: yearlyFeedback,
+      complaints: yearlyComplaints,
+      marks: yearlyMarks,
+    };
+
+    res.status(200).json(yearlyReport);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch student monthly report" });
+  }
+});
+
+// ==========================================================
 
 // Start the Express server
 app.listen(port, () => {
