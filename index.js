@@ -3245,19 +3245,19 @@ app.get("/student-monthly-report/:loginID", async (req, res) => {
 
       if (month === targetMonth && year === targetYear) {
         // This exam is in the current month, process its marks
-
+    
         // Define the structure for this exam type if it doesn't exist
         monthlyMarks[exam.examType] = monthlyMarks[exam.examType] || {};
-
+    
         // Define the structure for this exam subtype if it doesn't exist
         monthlyMarks[exam.examType][exam.examSubType] =
-          monthlyMarks[exam.examType][exam.examSubType] || {};
-
+          monthlyMarks[exam.examType][exam.examSubType] || { subjects: [], marks: [] };
+    
         // Store the marks for this subject
-        monthlyMarks[exam.examType][exam.examSubType][exam.subject] =
-          student.examMarks.find(
-            (entry) => entry.examID === exam._id.toString()
-          )?.mark || 0;
+        monthlyMarks[exam.examType][exam.examSubType].subjects.push(exam.subject);
+        monthlyMarks[exam.examType][exam.examSubType].marks.push(
+          student.examMarks.find((entry) => entry.examID === exam._id.toString())?.mark || 0
+        );
       }
     }
   });
