@@ -3282,7 +3282,6 @@ app.get("/student-monthly-report/:loginID", async (req, res) => {
 });
 
 // ==========================================================
-
 app.get("/student-yearly-report/:loginID", async (req, res) => {
   try {
     const { loginID } = req.params;
@@ -3330,19 +3329,19 @@ app.get("/student-yearly-report/:loginID", async (req, res) => {
 
       if (year === targetYear) {
         // This exam is in the current month, process its marks
-
+    
         // Define the structure for this exam type if it doesn't exist
         yearlyMarks[exam.examType] = yearlyMarks[exam.examType] || {};
-
+    
         // Define the structure for this exam subtype if it doesn't exist
         yearlyMarks[exam.examType][exam.examSubType] =
-        yearlyMarks[exam.examType][exam.examSubType] || {};
-
+        yearlyMarks[exam.examType][exam.examSubType] || { subjects: [], marks: [] };
+    
         // Store the marks for this subject
-        yearlyMarks[exam.examType][exam.examSubType][exam.subject] =
-          student.examMarks.find(
-            (entry) => entry.examID === exam._id.toString()
-          )?.mark || 0;
+        yearlyMarks[exam.examType][exam.examSubType].subjects.push(exam.subject);
+        yearlyMarks[exam.examType][exam.examSubType].marks.push(
+          student.examMarks.find((entry) => entry.examID === exam._id.toString())?.mark || 0
+        );
       }
     }
   });
@@ -3364,6 +3363,7 @@ app.get("/student-yearly-report/:loginID", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch student monthly report" });
   }
 });
+
 
 // ==========================================================
 
