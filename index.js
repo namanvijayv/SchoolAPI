@@ -9,7 +9,7 @@ const moment = require("moment-timezone");
 const http = require("http");
 const socketIo = require("socket.io");
 const axios = require("axios");
-// const multer = require("multer");
+const multer = require("multer");
 
 // Create an Express application
 const app = express();
@@ -85,6 +85,16 @@ const studentSchema = new mongoose.Schema({
       totalQuarterlyFees: Number, // Total fees for the quarter
       feesPaid: Number, // Fees paid for the quarter
       modeOfPayment: String, // Payment mode for the quarter
+    },
+  ],
+  leaveRequests: [
+    {
+      startDate: String, // Start date of the leave request
+      endDate: String, // End date of the leave request
+      reason: String, // Reason for leave
+      ty: String,
+      classTeacher: String,
+      status: String, // Status of the leave request (e.g., 'pending', 'approved', 'rejected')
     },
   ],
 });
@@ -3055,68 +3065,68 @@ app.get("/all-student-announcements", async (req, res) => {
 // ==========================================================
 
 // Set up Multer to handle file uploads
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     const { cls, sec } = req.params;
-//     const uploadPath = `C:/Users/Hp/Desktop/My Desktop/SchoolAPI/uploads/${cls}-${sec}/`;
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const { cls, sec } = req.params;
+    const uploadPath = `C:/Users/Hp/Desktop/My Desktop/SchoolAPI/uploads/${cls}-${sec}/`;
 
-//     // Ensure the directory exists
-//     fs.mkdir(uploadPath, { recursive: true }, (err) => {
-//       if (err) {
-//         return cb(err, null);
-//       }
-//       cb(null, uploadPath);
-//     });
-//   },
-//   filename: (req, file, cb) => {
-//     const extname = path.extname(file.originalname);
-//     const { title } = req.body;
+    // Ensure the directory exists
+    fs.mkdir(uploadPath, { recursive: true }, (err) => {
+      if (err) {
+        return cb(err, null);
+      }
+      cb(null, uploadPath);
+    });
+  },
+  filename: (req, file, cb) => {
+    const extname = path.extname(file.originalname);
+    const { title } = req.body;
 
-//     // Generate the filename using class, section, title, and the file extension
-//     const filename = `${title}${extname}`;
-//     cb(null, filename);
-//   },
-// });
+    // Generate the filename using class, section, title, and the file extension
+    const filename = `${title}${extname}`;
+    cb(null, filename);
+  },
+});
 
-// const upload = multer({ storage });
+const upload = multer({ storage });
 
-// app.post("/upload-notes/:cls/:sec", upload.single("file"), (req, res) => {
-//   try {
-//     // Process the uploaded file, save its details to the database, etc.
-//     // You can use the 'cls', 'sec', 'title', and 'file' variables here.
+app.post("/upload-notes/:cls/:sec", upload.single("file"), (req, res) => {
+  try {
+    // Process the uploaded file, save its details to the database, etc.
+    // You can use the 'cls', 'sec', 'title', and 'file' variables here.
 
-//     res.status(200).json({ message: "Notes uploaded successfully" });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: "Failed to upload notes" });
-//   }
-// });
+    res.status(200).json({ message: "Notes uploaded successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to upload notes" });
+  }
+});
 
-// app.get("/get-notes/:cls/:sec", (req, res) => {
-//   try {
-//     const { cls, sec } = req.params;
-//     const notesDirectory = path.join(__dirname, "uploads", `${cls}-${sec}`);
+app.get("/get-notes/:cls/:sec", (req, res) => {
+  try {
+    const { cls, sec } = req.params;
+    const notesDirectory = path.join(__dirname, "uploads", `${cls}-${sec}`);
 
-//     // Read the files in the directory
-//     fs.readdir(notesDirectory, (err, files) => {
-//       if (err) {
-//         console.error(err);
-//         return res.status(500).json({ error: "Failed to retrieve notes" });
-//       }
+    // Read the files in the directory
+    fs.readdir(notesDirectory, (err, files) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Failed to retrieve notes" });
+      }
 
-//       // Generate URLs for each file
-//       const notes = files.map((filename) => {
-//         const filePath = path.join(notesDirectory, filename);
-//         return { name: filename, url: filePath };
-//       });
+      // Generate URLs for each file
+      const notes = files.map((filename) => {
+        const filePath = path.join(notesDirectory, filename);
+        return { name: filename, url: filePath };
+      });
 
-//       res.status(200).json({ notes });
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: "Failed to retrieve notes" });
-//   }
-// });
+      res.status(200).json({ notes });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to retrieve notes" });
+  }
+});
 
 // ==========================================================
 
@@ -3370,6 +3380,99 @@ app.get("/student-yearly-report/:loginID", async (req, res) => {
 });
 
 // ==========================================================
+
+app.post("/student-submit-leave-request/:loginID", async (req, res) => {
+  try {
+    const { loginID } = req.params;
+    const { startDate, endDate, reason, ty, classTeacher } = req.body;
+
+    // Find the teacher based on their loginID
+    const teacher = await Student.findOne({ loginID });
+
+    if (!teacher) {
+      return res.status(404).json({ error: "Teacher not found" });
+    }
+
+    // Create a new leave request
+    const leaveRequest = {
+      startDate,
+      endDate,
+      reason,
+      ty,
+      classTeacher,
+      status: "pending",
+    };
+
+    // Add the leave request to the teacher's leaveRequests array
+    teacher.leaveRequests.push(leaveRequest);
+
+    // Save the updated teacher document
+    await teacher.save();
+
+    res.status(200).json({ message: "Leave request submitted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to submit leave request" });
+  }
+});
+
+// GET route to retrieve leave requests for a teacher
+app.get("/student-leave-requests/:loginID", async (req, res) => {
+  try {
+    const { loginID } = req.params;
+
+    // Find the teacher based on their loginID
+    const teacher = await Student.findOne({ loginID });
+
+    if (!teacher) {
+      return res.status(404).json({ error: "Teacher not found" });
+    }
+
+    // Get the leave requests for the teacher
+    const leaveRequests = teacher.leaveRequests;
+
+    res.status(200).json(leaveRequests);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch leave requests" });
+  }
+});
+
+// PUT route to update the status of a leave request
+app.put("/student-leave-request/:loginID/:requestID", async (req, res) => {
+  try {
+    const { loginID, requestID } = req.params;
+    const { status } = req.body;
+
+    // Find the teacher based on their loginID
+    const teacher = await Student.findOne({ loginID });
+
+    if (!teacher) {
+      return res.status(404).json({ error: "Teacher not found" });
+    }
+
+    // Find the leave request by its ID
+    const leaveRequest = teacher.leaveRequests.id(requestID);
+
+    if (!leaveRequest) {
+      return res.status(404).json({ error: "Leave request not found" });
+    }
+
+    // Update the status of the leave request
+    leaveRequest.status = status;
+
+    // Save the updated teacher document
+    await teacher.save();
+
+    res
+      .status(200)
+      .json({ message: "Leave request status updated successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to update leave request status" });
+  }
+});
+
 
 // Start the Express server
 app.listen(port, () => {
