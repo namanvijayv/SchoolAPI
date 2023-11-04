@@ -9,7 +9,7 @@ const moment = require("moment-timezone");
 const http = require("http");
 const socketIo = require("socket.io");
 const axios = require("axios");
-const multer = require("multer");
+// const multer = require("multer");
 
 // Create an Express application
 const app = express();
@@ -3065,68 +3065,68 @@ app.get("/all-student-announcements", async (req, res) => {
 // ==========================================================
 
 // Set up Multer to handle file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const { cls, sec } = req.params;
-    const uploadPath = `C:/Users/Hp/Desktop/My Desktop/SchoolAPI/uploads/${cls}-${sec}/`;
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     const { cls, sec } = req.params;
+//     const uploadPath = `C:/Users/Hp/Desktop/My Desktop/SchoolAPI/uploads/${cls}-${sec}/`;
 
-    // Ensure the directory exists
-    fs.mkdir(uploadPath, { recursive: true }, (err) => {
-      if (err) {
-        return cb(err, null);
-      }
-      cb(null, uploadPath);
-    });
-  },
-  filename: (req, file, cb) => {
-    const extname = path.extname(file.originalname);
-    const { title } = req.body;
+//     // Ensure the directory exists
+//     fs.mkdir(uploadPath, { recursive: true }, (err) => {
+//       if (err) {
+//         return cb(err, null);
+//       }
+//       cb(null, uploadPath);
+//     });
+//   },
+//   filename: (req, file, cb) => {
+//     const extname = path.extname(file.originalname);
+//     const { title } = req.body;
 
-    // Generate the filename using class, section, title, and the file extension
-    const filename = `${title}${extname}`;
-    cb(null, filename);
-  },
-});
+//     // Generate the filename using class, section, title, and the file extension
+//     const filename = `${title}${extname}`;
+//     cb(null, filename);
+//   },
+// });
 
-const upload = multer({ storage });
+// const upload = multer({ storage });
 
-app.post("/upload-notes/:cls/:sec", upload.single("file"), (req, res) => {
-  try {
-    // Process the uploaded file, save its details to the database, etc.
-    // You can use the 'cls', 'sec', 'title', and 'file' variables here.
+// app.post("/upload-notes/:cls/:sec", upload.single("file"), (req, res) => {
+//   try {
+//     // Process the uploaded file, save its details to the database, etc.
+//     // You can use the 'cls', 'sec', 'title', and 'file' variables here.
 
-    res.status(200).json({ message: "Notes uploaded successfully" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to upload notes" });
-  }
-});
+//     res.status(200).json({ message: "Notes uploaded successfully" });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Failed to upload notes" });
+//   }
+// });
 
-app.get("/get-notes/:cls/:sec", (req, res) => {
-  try {
-    const { cls, sec } = req.params;
-    const notesDirectory = path.join(__dirname, "uploads", `${cls}-${sec}`);
+// app.get("/get-notes/:cls/:sec", (req, res) => {
+//   try {
+//     const { cls, sec } = req.params;
+//     const notesDirectory = path.join(__dirname, "uploads", `${cls}-${sec}`);
 
-    // Read the files in the directory
-    fs.readdir(notesDirectory, (err, files) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ error: "Failed to retrieve notes" });
-      }
+//     // Read the files in the directory
+//     fs.readdir(notesDirectory, (err, files) => {
+//       if (err) {
+//         console.error(err);
+//         return res.status(500).json({ error: "Failed to retrieve notes" });
+//       }
 
-      // Generate URLs for each file
-      const notes = files.map((filename) => {
-        const filePath = path.join(notesDirectory, filename);
-        return { name: filename, url: filePath };
-      });
+//       // Generate URLs for each file
+//       const notes = files.map((filename) => {
+//         const filePath = path.join(notesDirectory, filename);
+//         return { name: filename, url: filePath };
+//       });
 
-      res.status(200).json({ notes });
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to retrieve notes" });
-  }
-});
+//       res.status(200).json({ notes });
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Failed to retrieve notes" });
+//   }
+// });
 
 // ==========================================================
 
