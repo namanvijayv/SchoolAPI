@@ -2842,7 +2842,7 @@ app.get("/view-quarterwise-fees/:loginID", async (req, res) => {
       return res.status(404).json({ error: "Student not found" });
     }
 
-    res.status(200).json({ feesDistributions:  roundOffFees(student.feesDistributions) });
+    res.status(200).json({ feesDistributions:  roundOffFees(student) });
     
   } catch (error) {
     console.error(error);
