@@ -2832,7 +2832,7 @@ app.get("/view-quarterwise-fees/:loginID", async (req, res) => {
     // Find the student by loginID
     const student = await Student.findOne({ loginID });
     function roundOffFees(response) {
-        response.feesDistributions.forEach(distribution => {
+        response.forEach(distribution => {
         distribution.totalQuarterlyFees = Math.round(distribution.totalQuarterlyFees);
       });
       return response;
@@ -2842,7 +2842,7 @@ app.get("/view-quarterwise-fees/:loginID", async (req, res) => {
       return res.status(404).json({ error: "Student not found" });
     }
 
-    res.status(200).json({ feesDistributions:  roundOffFees(student) });
+    res.status(200).json({ feesDistributions:  roundOffFees(student.feesDistributions) });
     
   } catch (error) {
     console.error(error);
