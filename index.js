@@ -9,6 +9,7 @@ const moment = require("moment-timezone");
 const http = require("http");
 const socketIo = require("socket.io");
 const axios = require("axios");
+const geoip = require('geoip-lite');
 // const multer = require("multer");
 
 // Create an Express application
@@ -33,10 +34,6 @@ mongoose
 // BLOCX NODE API FOR COORDINATES
 app.get('/getCoordinates', async (req, res) => {
   try {
-    // Replace 'YOUR_API_KEY' with your actual API key from ip-api.com
-    // const apiKey = 'YOUR_API_KEY';
-    const apiUrl = 'http://ip-api.com/json/';
-
     // Fetch data from the provided API
     const response = await axios.get('https://explorer.blocx.space/ext/getmasternodelist');
     const data = response.data;
@@ -44,16 +41,16 @@ app.get('/getCoordinates', async (req, res) => {
     // Extract and transform the data to get coordinates from IP addresses
     const coordinatesPromises = data.map(async (node) => {
       const [ip] = node.ip_address.split(':');
-      try {
-        const response = await axios.get(`${apiUrl}${ip}`);
+      const geo = geoip.lookup(ip);
 
-        const { lat, lon } = response.data;
+      if (geo && geo.ll) {
         return {
-          latitude: lat,
-          longitude: lon,
+          rank: node.rank,
+          address: node.addr,
+          latitude: geo.ll[0],
+          longitude: geo.ll[1],
         };
-      } catch (error) {
-        console.error(`Error fetching coordinates for IP ${ip}: ${error.message}`);
+      } else {
         return null;
       }
     });
