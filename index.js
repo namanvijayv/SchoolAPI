@@ -29,6 +29,46 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
+
+// BLOCX NODE API FOR COORDINATES
+app.get('/getCoordinates', async (req, res) => {
+  try {
+    // Replace 'YOUR_API_KEY' with your actual API key from ip-api.com
+    // const apiKey = 'YOUR_API_KEY';
+    const apiUrl = 'http://ip-api.com/json/';
+
+    // Fetch data from the provided API
+    const response = await axios.get('https://explorer.blocx.space/ext/getmasternodelist');
+    const data = response.data;
+
+    // Extract and transform the data to get coordinates from IP addresses
+    const coordinatesPromises = data.map(async (node) => {
+      const [ip] = node.ip_address.split(':');
+      try {
+        const response = await axios.get(`${apiUrl}${ip}`);
+
+        const { lat, lon } = response.data;
+        return {
+          latitude: lat,
+          longitude: lon,
+        };
+      } catch (error) {
+        console.error(`Error fetching coordinates for IP ${ip}: ${error.message}`);
+        return null;
+      }
+    });
+
+    const coordinates = await Promise.all(coordinatesPromises);
+    res.json(coordinates);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'An error occurred while fetching the data.' });
+  }
+});
+// END HERE - NO SCHOOL API
+
+
+
 // Define a MongoDB Schema for students
 const studentSchema = new mongoose.Schema({
   name: String,
