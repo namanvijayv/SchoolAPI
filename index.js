@@ -68,6 +68,7 @@ app.get('/getNetworkCoordinates', async (req, res) => {
     // Fetch data from the provided API
     const response = await axios.get('https://api-explorer.blocx.space/ext/getnetworkpeers');
     const data = response.data;
+    console.log(data);
 
     // Extract and transform the data to get coordinates from IP addresses
     const coordinatesPromises = data.map(async (node) => {
@@ -76,8 +77,8 @@ app.get('/getNetworkCoordinates', async (req, res) => {
 
       if (geo && geo.ll) {
         return {
-          rank: node.rank,
-          address: node.addr,
+          // rank: node.rank,
+          address: node.address,
           latitude: geo.ll[0],
           longitude: geo.ll[1],
         };
