@@ -35,12 +35,43 @@ mongoose
 app.get('/getCoordinates', async (req, res) => {
   try {
     // Fetch data from the provided API
-    const response = await axios.get('https://explorer.blocx.space/ext/getmasternodelist');
+    const response = await axios.get('https://api-explorer.blocx.space/ext/getmasternodelist');
     const data = response.data;
 
     // Extract and transform the data to get coordinates from IP addresses
     const coordinatesPromises = data.map(async (node) => {
       const [ip] = node.ip_address.split(':');
+      const geo = geoip.lookup(ip);
+
+      if (geo && geo.ll) {
+        return {
+          rank: node.rank,
+          address: node.addr,
+          latitude: geo.ll[0],
+          longitude: geo.ll[1],
+        };
+      } else {
+        return null;
+      }
+    });
+
+    const coordinates = await Promise.all(coordinatesPromises);
+    res.json(coordinates);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'An error occurred while fetching the data.' });
+  }
+});
+
+app.get('/getNetworkCoordinates', async (req, res) => {
+  try {
+    // Fetch data from the provided API
+    const response = await axios.get('https://api-explorer.blocx.space/ext/getnetworkpeers');
+    const data = response.data;
+
+    // Extract and transform the data to get coordinates from IP addresses
+    const coordinatesPromises = data.map(async (node) => {
+      const [ip] = node.address;
       const geo = geoip.lookup(ip);
 
       if (geo && geo.ll) {
