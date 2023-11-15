@@ -63,52 +63,35 @@ app.get('/getCoordinates', async (req, res) => {
   }
 });
 
-app.get('/getlocations', async (req, res) => {
-  const apiEndpoint = 'https://api-explorer.blocx.space/ext/getnetworkpeers';
-// Use Restcountries API to get the country details for each peer
-const locations = await Promise.all(networkPeers.map(async (peer) => {
+
+app.get('/getpeerLocation', async (req, res) => {
   try {
-    const countryCode = peer.country_code;
-    const restcountriesEndpoint = `https://restcountries.com/v3.1/alpha/${countryCode}`;
-    const countryResponse = await axios.get(restcountriesEndpoint);
-    const countryData = countryResponse.data[0];
+    // Fetch data from the provided API
+    const response = await axios.get('https://api-explorer.blocx.space/ext/getnetworkpeers');
+    const data = response.data;
 
-    return {
-      ipAddress: peer.address,
-      country: {
-        name: countryData.name.common,
-        code: countryData.cca2,
-        region: countryData.region,
-        subregion: countryData.subregion,
-        location: {
-          latitude: countryData.latlng[0],
-          longitude: countryData.latlng[1],
-        },
-      },
-    };
+    // Extract and transform the data to get coordinates from IP addresses
+    const coordinatesPromises = data.map(async (node) => {
+      const [ip] = node.address.split(':');
+      const geo = geoip.lookup(ip);
+
+      if (geo && geo.ll) {
+        return {
+        //   rank: node.rank,
+          address: node.address,
+          latitude: geo.ll[0],
+          longitude: geo.ll[1],
+        };
+      } else {
+        return null;
+      }
+    });
+
+    const coordinates = await Promise.all(coordinatesPromises);
+    res.json(coordinates.filter(coord => coord !== null));
   } catch (error) {
-    console.error('Error fetching country data:', error.message);
-    return {
-      ipAddress: peer.address,
-      country: {
-        name: 'Unknown',
-        code: 'N/A',
-        region: 'N/A',
-        subregion: 'N/A',
-        location: {
-          latitude: null,
-          longitude: null,
-        },
-      },
-    };
-  }
-}));
-
-res.json({ locations });
-
-  } catch (error) {
-    console.error('Error:', error.message);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error(error);
+    res.status(500).json({ error: 'An error occurred while fetching the data.' });
   }
 });
 // END HERE - NO SCHOOL API
