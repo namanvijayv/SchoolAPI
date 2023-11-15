@@ -63,35 +63,43 @@ app.get('/getCoordinates', async (req, res) => {
   }
 });
 
-app.get('/getNetworkCoordinates', async (req, res) => {
+app.get('/getlocation', async (req, res) => {
+  const apiEndpoint = 'https://api-explorer.blocx.space/ext/getnetworkpeers';
+
   try {
     // Fetch data from the provided API
-    const response = await axios.get('https://api-explorer.blocx.space/ext/getnetworkpeers');
-    const data = response.data;
-    console.log(data);
+    const response = await axios.get(apiEndpoint);
+    const networkPeers = response.data;
 
-    // Extract and transform the data to get coordinates from IP addresses
-    const coordinatesPromises = data.map(async (node) => {
-      const [ip] = node.address;
-      const geo = geoip.lookup(ip);
+    if (networkPeers.length === 0) {
+      return res.status(404).json({ error: 'No network peers data available' });
+    }
 
-      if (geo && geo.ll) {
-        return {
-          // rank: node.rank,
-          address: node.address,
-          latitude: geo.ll[0],
-          longitude: geo.ll[1],
-        };
-      } else {
-        return null;
-      }
+    // For this example, let's use the first peer's country code
+    const firstPeer = networkPeers[0];
+    const countryCode = firstPeer.country_code;
+
+    // Use Restcountries API to get the country details
+    const restcountriesEndpoint = `https://restcountries.com/v3.1/alpha/${countryCode}`;
+    const countryResponse = await axios.get(restcountriesEndpoint);
+    const countryData = countryResponse.data[0];
+
+    res.json({
+      country: {
+        name: countryData.name.common,
+        code: countryData.cca2,
+        region: countryData.region,
+        subregion: countryData.subregion,
+        location: {
+          latitude: countryData.latlng[0],
+          longitude: countryData.latlng[1],
+        },
+      },
+      ipAddress: firstPeer.address,
     });
-
-    const coordinates = await Promise.all(coordinatesPromises);
-    res.json(coordinates);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'An error occurred while fetching the data.' });
+    console.error('Error:', error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 // END HERE - NO SCHOOL API
