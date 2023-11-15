@@ -63,7 +63,7 @@ app.get('/getCoordinates', async (req, res) => {
   }
 });
 
-app.get('/getlocation', async (req, res) => {
+app.get('/getlocations', async (req, res) => {
   const apiEndpoint = 'https://api-explorer.blocx.space/ext/getnetworkpeers';
 
   try {
@@ -75,28 +75,21 @@ app.get('/getlocation', async (req, res) => {
       return res.status(404).json({ error: 'No network peers data available' });
     }
 
-    // For this example, let's use the first peer's country code
-    const firstPeer = networkPeers[0];
-    const countryCode = firstPeer.country_code;
+    // Use Restcountries API to get the country details for each peer
+    const locations = await Promise.all(networkPeers.map(async (peer) => {
+      const countryCode = peer.country_code;
+      const restcountriesEndpoint = `https://restcountries.com/v3.1/alpha/${countryCode}`;
+      const countryResponse = await axios.get(restcountriesEndpoint);
+      const countryData = countryResponse.data[0];
 
-    // Use Restcountries API to get the country details
-    const restcountriesEndpoint = `https://restcountries.com/v3.1/alpha/${countryCode}`;
-    const countryResponse = await axios.get(restcountriesEndpoint);
-    const countryData = countryResponse.data[0];
+      return {
+        ipAddress: peer.address,
+        latitude: countryData.latlng[0],
+        longitude: countryData.latlng[1],
+        } ;
+    }));
 
-    res.json({
-      country: {
-        name: countryData.name.common,
-        code: countryData.cca2,
-        region: countryData.region,
-        subregion: countryData.subregion,
-        location: {
-          latitude: countryData.latlng[0],
-          longitude: countryData.latlng[1],
-        },
-      },
-      ipAddress: firstPeer.address,
-    });
+    res.json({ locations });
   } catch (error) {
     console.error('Error:', error.message);
     res.status(500).json({ error: 'Internal Server Error' });
