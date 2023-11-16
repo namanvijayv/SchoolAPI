@@ -1383,7 +1383,8 @@ app.post("/teacher-login", async (req, res) => {
       // You can use authentication libraries like JWT to create a token
 
       // Respond with a success message or token
-      res.status(200).json({ message: "Teacher logged in successfully", Name : teacher.name, LoginID : teacher.loginID  });
+      // , Name : teacher.name, LoginID : teacher.loginID  
+      res.status(200).json({ message: "Teacher logged in successfully"});
     } else {
       // Teacher not found or invalid credentials
       res.status(401).json({ error: "Invalid login credentials" });
