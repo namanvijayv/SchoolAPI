@@ -63,37 +63,77 @@ app.get('/getCoordinates', async (req, res) => {
   }
 });
 
+// Mapping of country codes to coordinates
+const countryCoordinates = {
+  CN: { latitude: 35.8617, longitude: 104.1954 }, // Example for China
+  US: { latitude: 37.7749, longitude: -122.4194 }, // Example for the United States
+  DE: { latitude: 51.1657, longitude: 10.4515 }, // Example for Germany
+  SG: { latitude: 1.3521, longitude: 103.8198 }, // Example for Singapore
+  NL: { latitude: 52.3676, longitude: 4.9041 }, // Example for Netherlands
+  IL: { latitude: 31.0461, longitude: 34.8516 }, // Example for Israel
+  ES: { latitude: 40.4168, longitude: -3.7038 }, // Example for Spain
+  PL: { latitude: 51.9194, longitude: 19.1451 }, // Example for Poland
+  GB: { latitude: 51.5099, longitude: -0.1180 }, // Example for the United Kingdom
+  RO: { latitude: 45.9432, longitude: 24.9668 }, // Example for Romania
+  RU: { latitude: 61.5240, longitude: 105.3188 }, // Example for Russia
+  TN: { latitude: 33.8869, longitude: 9.5375 }, // Example for Tunisia
+  NZ: { latitude: -40.9006, longitude: 174.8860 }, // Example for New Zealand
+  JP: { latitude: 36.2048, longitude: 138.2529 }, // Example for Japan
+  AU: { latitude: -25.2744, longitude: 133.7751 }, // Example for Australia
+  FR: { latitude: 46.6031, longitude: 1.8883 }, // Example for France
+  // Add more country codes and their corresponding coordinates as needed
+};
+
+// Mapping to store used coordinates for each country
+const usedCoordinates = {};
 
 app.get('/getpeerLocation', async (req, res) => {
   try {
-    // Fetch data from the provided API
+    // Make a request to the provided API
     const response = await axios.get('https://api-explorer.blocx.space/ext/getnetworkpeers');
-    const data = response.data;
 
-    // Extract and transform the data to get coordinates from IP addresses
-    const coordinatesPromises = data.map(async (node) => {
-      const [ip] = node.address.split(':');
-      const geo = geoip.lookup(ip);
+    // Extract and generate coordinates based on country_code
+    const locations = response.data.map((peer) => {
+      const { country_code } = peer;
+      if (country_code && countryCoordinates[country_code]) {
+        const countryUsedCoordinates = usedCoordinates[country_code] || [];
+        let coordinates;
 
-      if (geo && geo.ll) {
+        // Generate unique coordinates for the country
+        do {
+          coordinates = generateRandomCoordinates(countryCoordinates[country_code]);
+        } while (countryUsedCoordinates.some((usedCoord) => areCoordinatesEqual(usedCoord, coordinates)));
+
+        // Store used coordinates for the country
+        usedCoordinates[country_code] = [...countryUsedCoordinates, coordinates];
+
         return {
-        //   rank: node.rank,
-          address: node.address,
-          latitude: geo.ll[0],
-          longitude: geo.ll[1],
+          address: peer.address,
+          country_code: peer.country_code,
+          latitude: coordinates.latitude,
+          longitude: coordinates.longitude,
         };
-      } else {
-        return null;
       }
     });
 
-    const coordinates = await Promise.all(coordinatesPromises);
-    res.json(coordinates.filter(coord => coord !== null));
+    res.json(locations.filter(Boolean)); // Filter out undefined results
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'An error occurred while fetching the data.' });
+    console.error('Error fetching data:', error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+function generateRandomCoordinates(baseCoordinates) {
+  // Generate random coordinates around the base coordinates
+  const latitude = baseCoordinates.latitude + (Math.random() - 0.5) * 10;
+  const longitude = baseCoordinates.longitude + (Math.random() - 0.5) * 10;
+  return { latitude, longitude };
+}
+
+function areCoordinatesEqual(coord1, coord2) {
+  // Check if two sets of coordinates are equal
+  return coord1.latitude === coord2.latitude && coord1.longitude === coord2.longitude;
+}
 // END HERE - NO SCHOOL API
 
 
