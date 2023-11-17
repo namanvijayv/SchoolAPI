@@ -65,7 +65,7 @@ app.get('/getCoordinates', async (req, res) => {
 
 // Mapping of country codes to coordinates
 const countryCoordinates = {
-  CN: { latitude: 35.8617, longitude: 104.1954 }, // Example for China
+  CN: { latitude: 39.9042, longitude: 116.4074 }, // Example for China
   US: { latitude: 37.7749, longitude: -122.4194 }, // Example for the United States
   DE: { latitude: 51.1657, longitude: 10.4515 }, // Example for Germany
   SG: { latitude: 1.3521, longitude: 103.8198 }, // Example for Singapore
