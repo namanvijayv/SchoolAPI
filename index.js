@@ -3591,6 +3591,152 @@ app.put("/student-leave-request/:loginID/:requestID", async (req, res) => {
 });
 
 
+// Calculate the sum of all students' fees
+app.get('/total-fees', async (req, res) => {
+  try {
+    const students = await Student.find({});
+    let totalFeesSum = 0;
+
+    for (const student of students) {
+      if (student.totalFees) {
+        totalFeesSum += student.totalFees;
+      }
+    }
+
+    res.json({ totalFeesSum });
+  } catch (error) {
+    res.status(500).json({ error: 'Error calculating total fees.' });
+  }
+});
+
+// Calculate the sum of all students' paid fees
+app.get('/total-paid-fees', async (req, res) => {
+  try {
+    const students = await Student.find({});
+    let totalPaidFeesSum = 0;
+
+    for (const student of students) {
+      for (const feesDistribution of student.feesDistributions) {
+        if (feesDistribution.feesPaid) {
+          totalPaidFeesSum += feesDistribution.feesPaid;
+        }
+      }
+    }
+
+    res.json({ totalPaidFeesSum });
+  } catch (error) {
+    res.status(500).json({ error: 'Error calculating total paid fees.' });
+  }
+});
+
+// Add this route to your existing code
+app.get('/total-students', async (req, res) => {
+  try {
+    const totalStudents = await Student.countDocuments({});
+    res.json({ totalStudents });
+  } catch (error) {
+    res.status(500).json({ error: 'Error counting total students.' });
+  }
+});
+
+app.get('/total-teachers', async (req, res) => {
+  try {
+    const totalTeachers = await Teacher.countDocuments({});
+    res.json({ totalTeachers });
+  } catch (error) {
+    res.status(500).json({ error: 'Error counting total students.' });
+  }
+});
+
+
+app.get('/recent-fee-payments', async (req, res) => {
+  try {
+    const studentsWithRecentPayments = await Student.aggregate([
+      {
+        $match: {
+          'feesDistributions.feesPaid': { $gt: 0 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          name: 1,
+          class: 1,
+          section: 1,
+          feesDistributions: {
+            $filter: {
+              input: '$feesDistributions',
+              as: 'fee',
+              cond: { $gt: ['$$fee.feesPaid', 0] },
+            },
+          },
+        },
+      },
+    ]);
+
+    res.json(studentsWithRecentPayments);
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching recent fee payments.' });
+  }
+});
+
+// Get the count and details of visitors for today
+app.get('/visitors-today', async (req, res) => {
+  const today = new Date().toISOString().split('T')[0]; // Get today's date in the format 'YYYY-MM-DD'
+
+  try {
+    const visitorsToday = await Visitor.find({ visitDate: today });
+    const visitorCount = visitorsToday.length;
+
+    res.json({
+      totalVisitors: visitorCount,
+      visitors: visitorsToday,
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching visitors for today.' });
+  }
+});
+
+// Get the count of students present today
+app.get('/students-present-today', async (req, res) => {
+  const today = new Date().toISOString().split('T')[0]; // Get today's date in the format 'YYYY-MM-DD'
+
+  try {
+    const studentsPresentToday = await Student.find({
+      presentDates: { $in: [today] },
+    });
+    const studentCount = studentsPresentToday.length;
+
+    res.json({
+      totalStudentsPresent: studentCount
+      // students: studentsPresentToday,
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching students present today.' });
+  }
+});
+
+
+// Get the count of teachers present today
+app.get('/teachers-present-today', async (req, res) => {
+  const today = new Date().toISOString().split('T')[0]; // Get today's date in the format 'YYYY-MM-DD'
+
+  try {
+    const teachersPresentToday = await Teacher.find({
+      'present.date': today,
+    });
+    const teacherCount = teachersPresentToday.length;
+
+    res.json({
+      totalTeachersPresent: teacherCount,
+      // teachers: teachersPresentToday,
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching teachers present today.' });
+  }
+});
+
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
