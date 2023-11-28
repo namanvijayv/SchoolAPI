@@ -1068,6 +1068,54 @@ app.get("/teachers/:loginID", async (req, res) => {
   }
 });
 
+// Delete a teacher by loginID
+app.delete("/teacher/loginID/:loginID", async (req, res) => {
+  try {
+    const loginID = req.params.loginID;
+
+    // Delete the student record from the database using loginID
+    const deletedTeacher = await Teacher.findOneAndRemove({ loginID: loginID });
+
+    if (!deletedTeacher) {
+      return res.status(404).json({ error: "Teacher not found" });
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ error: "Could not delete student" });
+  }
+});
+
+// Define a route to edit a teacher by loginID
+app.put("/edit-teacher/:loginID", async (req, res) => {
+  try {
+    const loginID = req.params.loginID; // Get the loginID from the URL parameters
+    const updatedTeacherData = req.body; // Get the updated student data from the request body
+
+    // Find the student by their loginID and update their information
+    const updatedTeacher = await Teacher.findOneAndUpdate(
+      { loginID },
+      updatedTeacherData,
+      {
+        new: true, // Return the updated student data
+        runValidators: true, // Validate the updated data against the schema
+      }
+    );
+
+    if (!updatedTeacher) {
+      // If the student with the given loginID is not found, return a 404 response
+      return res.status(404).json({ error: "Teacher not found" });
+    }
+
+    // Return the updated student data as a response
+    res.status(200).json(updatedTeacher);
+  } catch (error) {
+    // Handle errors and send an appropriate response
+    console.error(error);
+    res.status(500).json({ error: "Failed to update teacher" });
+  }
+});
+
 app.get("/punch-in/:loginID", async (req, res) => {
   try {
     const loginID = req.params.loginID;
