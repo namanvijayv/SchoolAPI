@@ -3127,6 +3127,28 @@ app.get("/get-notices", async (req, res) => {
   }
 });
 
+// Delete a notice by ID
+app.delete('/notices/:id', async (req, res) => {
+  const noticeId = req.params.id;
+
+  try {
+    // Check if the notice exists
+    const existingNotice = await Notice.findById(noticeId);
+
+    if (!existingNotice) {
+      return res.status(404).json({ error: 'Notice not found' });
+    }
+
+    // Delete the notice
+    await Notice.findByIdAndDelete(noticeId);
+
+    res.json({ message: 'Notice deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting notice:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 // =======================================================================
 app.get("/all-student-announcements", async (req, res) => {
   try {
