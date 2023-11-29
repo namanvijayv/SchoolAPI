@@ -151,6 +151,7 @@ const studentSchema = new mongoose.Schema({
   address: String,
   loginID: String,
   password: String,
+  gender : String,
   DOB: String,
   presentDates: [String],
   absentDates: [String],
@@ -235,6 +236,7 @@ app.post("/students", async (req, res) => {
     const {
       name,
       age,
+      gender,
       class: studentClass,
       section,
       contactNumber,
@@ -248,6 +250,7 @@ app.post("/students", async (req, res) => {
     const student = new Student({
       name,
       age,
+      gender,
       class: studentClass,
       section,
       contactNumber,
