@@ -311,6 +311,23 @@ app.get("/get-classes", async (req, res) => {
   }
 });
 
+// Route to count students by gender
+app.get('/students/count-by-gender', async (req, res) => {
+  try {
+    const maleCount = await Student.countDocuments({ gender: 'Male' });
+    const femaleCount = await Student.countDocuments({ gender: 'Female' });
+
+    res.json({
+      maleCount,
+      femaleCount,
+      total: maleCount + femaleCount,
+    });
+  } catch (error) {
+    console.error('Error counting students by gender:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 // Delete a student by loginID
 app.delete("/students/loginID/:loginID", async (req, res) => {
   try {
