@@ -3826,8 +3826,17 @@ app.get('/teachers-present-today', async (req, res) => {
   }
 });
 
-app.get('/all-buses', (req, res) => {
-  res.json(Bus);
+app.get("/all-buses", async (req, res) => {
+  try {
+    // Retrieve all teacher records from the database
+    const buses = await Bus.find();
+
+    // Send the list of teachers as a JSON response
+    res.status(200).json(buses);
+  } catch (error) {
+    // Handle any errors that occur during the database query
+    res.status(500).json({ error: "500 - Could not fetch Buses" });
+  }
 });
 
 // Start the Express server
