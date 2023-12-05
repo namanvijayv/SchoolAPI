@@ -3839,6 +3839,24 @@ app.get("/all-buses", async (req, res) => {
   }
 });
 
+// Retrieve a timetable by class and section
+app.get("/get-exams/:cla", async (req, res) => {
+  try {
+    const { cla } = req.params;
+
+    const exams = await Exam.findOne({ class: cla });
+
+    if (!exams) {
+      return res.status(404).json({ message: "Timetable not found" });
+    }
+
+    res.status(200).json(exams);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch Exams" });
+  }
+});
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
