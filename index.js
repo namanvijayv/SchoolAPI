@@ -2263,6 +2263,7 @@ const examSchema = new mongoose.Schema({
   examSubType: String, // Subtype of the exam (e.g., 'Unit Test 1', 'Unit Test 2')
   maxMarks: Number, // Maximum marks for the exam
   date: String,
+  time : String,
 });
 
 const Exam = mongoose.model("Exam", examSchema);
@@ -2277,6 +2278,7 @@ app.post("/create-exam", async (req, res) => {
       examSubType,
       maxMarks,
       date,
+      time,
     } = req.body;
 
     // Create a new exam document
@@ -2287,6 +2289,7 @@ app.post("/create-exam", async (req, res) => {
       examSubType,
       maxMarks,
       date,
+      time,
     });
 
     // Save the new exam document
