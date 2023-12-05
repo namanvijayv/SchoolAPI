@@ -3899,7 +3899,7 @@ app.get("/expenses-chart", async (req, res) => {
                   labels: ['Total Fees', 'Total Paid Fees'],
                   datasets: [{
                     data: [${presentCount}, ${absentCount}],
-                    backgroundColor: ['blue', 'yellow'],
+                    backgroundColor: ['#c2380f', '#045a8d'],
                   }],
                 },
               };
