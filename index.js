@@ -3860,6 +3860,64 @@ app.get("/get-exams/:cla", async (req, res) => {
   }
 });
 
+app.get("/expenses-chart", async (req, res) => {
+    try {
+        const students = await Student.find({});
+        let totalFeesSum = 0;
+
+        for (const student of students) {
+            if (student.totalFees) {
+                totalFeesSum += student.totalFees;
+            }
+        }
+
+        let totalPaidFeesSum = 0;
+
+        for (const student of students) {
+            for (const feesDistribution of student.feesDistributions) {
+                if (feesDistribution.feesPaid) {
+                    totalPaidFeesSum += feesDistribution.feesPaid;
+                }
+            }
+        }
+        const presentCount = totalFeesSum;
+        const absentCount = totalPaidFeesSum ;
+
+        // Generate the chart as HTML
+        const chartHtml = `
+        <html>
+          <head>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          </head>
+          <body>
+            <canvas id="statusChart" width="400" height="200"></canvas>
+            <script>
+              const ctx = document.getElementById('statusChart').getContext('2d');
+              const chartConfig = {
+                type: 'pie',
+                data: {
+                  labels: ['Total Fees', 'Total Paid Fees'],
+                  datasets: [{
+                    data: [${presentCount}, ${absentCount}],
+                    backgroundColor: ['blue', 'yellow'],
+                  }],
+                },
+              };
+              new Chart(ctx, chartConfig);
+            </script>
+          </body>
+        </html>
+      `;
+
+        // Set the content type to HTML and send the chart as an HTML response
+        res.setHeader("Content-Type", "text/html");
+        res.status(200).send(chartHtml);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Could not generate chart" });
+    }
+});
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
