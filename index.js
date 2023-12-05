@@ -3826,6 +3826,9 @@ app.get('/teachers-present-today', async (req, res) => {
   }
 });
 
+app.get('/all-buses', (req, res) => {
+  res.json(Bus);
+});
 
 // Start the Express server
 app.listen(port, () => {
