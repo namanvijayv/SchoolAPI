@@ -3918,6 +3918,38 @@ app.get("/expenses-chart", async (req, res) => {
     }
 });
 
+// Expense Schema
+const expenseSchema = new mongoose.Schema({
+  description: String,
+  amount: Number,
+  date: { type: Date, default: Date.now },
+});
+
+const Expense = mongoose.model('Expense', expenseSchema);
+
+// Middleware
+app.use(bodyParser.json());
+
+// Routes
+app.get('/expenses', async (req, res) => {
+  try {
+    const expenses = await Expense.find();
+    res.json(expenses);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.post('/expenses', async (req, res) => {
+  try {
+    const newExpense = new Expense(req.body);
+    const savedExpense = await newExpense.save();
+    res.status(201).json(savedExpense);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
