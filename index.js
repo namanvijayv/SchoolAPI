@@ -3994,6 +3994,19 @@ app.post('/cleaners', async (req, res) => {
 });
 
 
+app.get('/cleaners/:loginID', async (req, res) => {
+  try {
+    const cleaner = await Cleaner.findOne({ loginID: req.params.loginID });
+    if (!cleaner) {
+      return res.status(404).json({ error: 'Cleaner not found' });
+    }
+    res.json(cleaner);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
