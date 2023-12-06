@@ -3950,6 +3950,50 @@ app.post('/expenses', async (req, res) => {
   }
 });
 
+// Cleaner Schema
+const cleanerSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  salary: Number,
+  department: String,
+  dateOfJoining: { type: Date, default: Date.now },
+  shiftTime: String,
+  loginID: { type: String, unique: true, uppercase: true },
+});
+
+// Pre-save hook to generate loginID
+cleanerSchema.pre('save', function (next) {
+  if (!this.loginID) {
+    // Generate loginID if not provided
+    const uniqueID = Math.random().toString(36).substr(2, 6).toUpperCase(); // Change length as needed
+    this.loginID = uniqueID;
+  }
+  next();
+});
+
+const Cleaner = mongoose.model('Cleaner', cleanerSchema);
+
+
+// Cleaner Routes
+app.get('/cleaners', async (req, res) => {
+  try {
+    const cleaners = await Cleaner.find();
+    res.json(cleaners);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+app.post('/cleaners', async (req, res) => {
+  try {
+    const newCleaner = new Cleaner(req.body);
+    const savedCleaner = await newCleaner.save();
+    res.status(201).json(savedCleaner);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
 // Start the Express server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
