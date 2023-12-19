@@ -284,6 +284,21 @@ app.get("/get-students", async (req, res) => {
   }
 });
 
+// Define a route to get students by class
+app.get("/get-orignal-students", async (req, res) => {
+  try {
+    const className = req.query.class;
+
+    // If className is not provided, retrieve all students
+    const query = className ? { class: className } : {};
+
+    const students = await Student.find(query);
+    res.status(200).json(StudentData);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
 // Define a route to get a student by loginID
 app.get("/get-student/loginID/:loginID", async (req, res) => {
   try {
