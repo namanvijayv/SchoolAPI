@@ -170,6 +170,7 @@ const studentSchema = new mongoose.Schema({
   ],
   complaints: [
     {
+      title:String,
       teacherName: String, // Name of the teacher who submitted the complaint
       date: String, // Date of the complaint in "DD-MM-YYYY" format
       complaintText: String, // Text of the complaint
@@ -2207,7 +2208,7 @@ app.get("/get-students/:class/:section", async (req, res) => {
 app.post("/submit-student-complaint/:loginID", async (req, res) => {
   try {
     const { loginID } = req.params;
-    const { teacherName, date, complaintText } = req.body;
+    const { title, teacherName, date, complaintText } = req.body;
 
     // Find the student based on their loginID
     const student = await Student.findOne({ loginID });
@@ -2218,6 +2219,7 @@ app.post("/submit-student-complaint/:loginID", async (req, res) => {
 
     // Create a new complaint
     const complaint = {
+      title,
       teacherName,
       date,
       complaintText,
