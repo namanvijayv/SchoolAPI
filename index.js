@@ -3859,15 +3859,15 @@ app.get("/all-buses", async (req, res) => {
   }
 });
 
-// Retrieve a timetable by class and section
+// Retrieve all exams by class and section
 app.get("/get-exams/:cla", async (req, res) => {
   try {
     const { cla } = req.params;
 
-    const exams = await Exam.findOne({ class: cla });
+    const exams = await Exam.find({ class: cla });
 
-    if (!exams) {
-      return res.status(404).json({ message: "Timetable not found" });
+    if (!exams || exams.length === 0) {
+      return res.status(404).json({ message: "Exams not found for this class" });
     }
 
     res.status(200).json(exams);
